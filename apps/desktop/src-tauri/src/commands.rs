@@ -1,6 +1,4 @@
-use crate::evidence::{
-    self, AppSettings, SessionDetail, SessionSummary,
-};
+use crate::evidence::{self, AppSettings, SessionDetail, SessionSummary};
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
 use crate::system::{self, DoctorReport};
@@ -61,12 +59,17 @@ pub struct ExampleProfileEntry {
 
 #[tauri::command]
 pub fn list_example_profiles() -> CmdResult<Vec<ExampleProfileEntry>> {
-    let dir = locate_examples_dir().ok_or_else(|| "examples/profiles directory not found".to_string())?;
+    let dir =
+        locate_examples_dir().ok_or_else(|| "examples/profiles directory not found".to_string())?;
     let read = std::fs::read_dir(&dir).map_err(err)?;
     let mut out = Vec::new();
     for entry in read.flatten() {
         let p = entry.path();
-        let ext = p.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+        let ext = p
+            .extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_lowercase();
         if !matches!(ext.as_str(), "yaml" | "yml" | "json") {
             continue;
         }
@@ -133,7 +136,8 @@ pub fn dry_run(mode: Mode, profile: Profile) -> CmdResult<SessionSummary> {
     // Lab mode in v0.1.0 is non-destructive (evidence only); we keep dry_run=true
     // for tor/wireguard/socks5 to make intent explicit.
     let dry_run_flag = !matches!(mode, Mode::Lab);
-    let res = evidence::write_session(&mode, &profile, &checks, &plan, dry_run_flag).map_err(err)?;
+    let res =
+        evidence::write_session(&mode, &profile, &checks, &plan, dry_run_flag).map_err(err)?;
     Ok(res.summary)
 }
 
@@ -150,8 +154,9 @@ pub fn read_session(session_id: String) -> CmdResult<SessionDetail> {
 #[tauri::command]
 pub fn open_evidence_dir(session_id: Option<String>) -> CmdResult<()> {
     let path = match session_id {
-        Some(id) => evidence::find_session_dir(&id)
-            .ok_or_else(|| format!("session not found: {}", id))?,
+        Some(id) => {
+            evidence::find_session_dir(&id).ok_or_else(|| format!("session not found: {}", id))?
+        }
         None => evidence::evidence_root(),
     };
     std::fs::create_dir_all(&path).map_err(err)?;

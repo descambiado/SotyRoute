@@ -104,10 +104,7 @@ fn os_info() -> (String, String) {
     }
     #[cfg(not(windows))]
     {
-        (
-            format!("{:?}", whoami::platform()),
-            whoami::distro(),
-        )
+        (format!("{:?}", whoami::platform()), whoami::distro())
     }
 }
 
@@ -169,10 +166,7 @@ fn list_dns_servers() -> Vec<String> {
 fn detect_tor() -> (bool, String) {
     let candidates = tor_paths();
     if let Some(p) = candidates.iter().find(|p| p.exists()) {
-        return (
-            true,
-            format!("Detected at {}", p.display()),
-        );
+        return (true, format!("Detected at {}", p.display()));
     }
     if where_exists("tor.exe") {
         return (true, "Detected via PATH (tor.exe).".into());
@@ -186,14 +180,43 @@ fn detect_tor() -> (bool, String) {
 fn tor_paths() -> Vec<PathBuf> {
     let mut v = Vec::new();
     if let Some(profile) = dirs::home_dir() {
-        v.push(profile.join("Desktop").join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
-        v.push(profile.join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
+        v.push(
+            profile
+                .join("Desktop")
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
+        v.push(
+            profile
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
     }
     if let Ok(pf) = std::env::var("ProgramFiles") {
-        v.push(PathBuf::from(&pf).join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
+        v.push(
+            PathBuf::from(&pf)
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
     }
     if let Ok(pf86) = std::env::var("ProgramFiles(x86)") {
-        v.push(PathBuf::from(&pf86).join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
+        v.push(
+            PathBuf::from(&pf86)
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
     }
     v.push(PathBuf::from(r"C:\Tor\tor.exe"));
     v
@@ -202,10 +225,7 @@ fn tor_paths() -> Vec<PathBuf> {
 fn detect_wireguard() -> (bool, String) {
     let candidates = wg_paths();
     if let Some(p) = candidates.iter().find(|p| p.exists()) {
-        return (
-            true,
-            format!("Detected at {}", p.display()),
-        );
+        return (true, format!("Detected at {}", p.display()));
     }
     if where_exists("wireguard.exe") || where_exists("wg.exe") {
         return (true, "Detected via PATH.".into());

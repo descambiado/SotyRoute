@@ -19,9 +19,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            evidence_dir: default_evidence_root()
-                .to_string_lossy()
-                .into_owned(),
+            evidence_dir: default_evidence_root().to_string_lossy().into_owned(),
             default_mode: "observe".into(),
             telemetry_enabled: false,
             public_ip_check_enabled: false,
@@ -195,11 +193,7 @@ pub fn write_session(
 
     let started_at = checks.generated_at.clone();
     let ended_at = Utc::now().to_rfc3339();
-    let status = if plan
-        .warnings
-        .iter()
-        .any(|w| w.severity == "error")
-    {
+    let status = if plan.warnings.iter().any(|w| w.severity == "error") {
         "partial"
     } else {
         "completed"
@@ -320,7 +314,10 @@ fn render_markdown(
     s.push_str("\n");
 
     s.push_str("## Host\n\n");
-    s.push_str(&format!("- os: `{}` ({})\n", checks.os_name, checks.os_version));
+    s.push_str(&format!(
+        "- os: `{}` ({})\n",
+        checks.os_name, checks.os_version
+    ));
     s.push_str(&format!("- hostname: `{}`\n", checks.hostname));
     s.push_str(&format!("- user: `{}`\n", checks.user));
     s.push_str(&format!("- admin: `{}`\n", checks.admin));
@@ -372,15 +369,42 @@ pub fn list_sessions() -> Vec<SessionSummary> {
         if let Ok(text) = std::fs::read_to_string(&f) {
             if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
                 let summary = SessionSummary {
-                    session_id: v.get("session_id").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    mode: v.get("mode").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    profile_name: v.get("profile").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    started_at: v.get("started_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    ended_at: v.get("ended_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
+                    session_id: v
+                        .get("session_id")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    mode: v
+                        .get("mode")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    profile_name: v
+                        .get("profile")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    started_at: v
+                        .get("started_at")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    ended_at: v
+                        .get("ended_at")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
                     dry_run: v.get("dry_run").and_then(|x| x.as_bool()).unwrap_or(false),
                     admin: v.get("admin").and_then(|x| x.as_bool()).unwrap_or(false),
-                    status: v.get("status").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    warnings_count: v.get("warnings_count").and_then(|x| x.as_u64()).unwrap_or(0) as usize,
+                    status: v
+                        .get("status")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    warnings_count: v
+                        .get("warnings_count")
+                        .and_then(|x| x.as_u64())
+                        .unwrap_or(0) as usize,
                     evidence_dir: p.to_string_lossy().into_owned(),
                 };
                 out.push(summary);
@@ -407,14 +431,44 @@ pub fn read_session(session_id: &str) -> anyhow::Result<SessionDetail> {
     let sotyhub = dir.join("sotyhub_export.json");
 
     let summary = SessionSummary {
-        session_id: summary_v.get("session_id").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        mode: summary_v.get("mode").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        profile_name: summary_v.get("profile").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        started_at: summary_v.get("started_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        ended_at: summary_v.get("ended_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        dry_run: summary_v.get("dry_run").and_then(|x| x.as_bool()).unwrap_or(false),
-        admin: summary_v.get("admin").and_then(|x| x.as_bool()).unwrap_or(false),
-        status: summary_v.get("status").and_then(|x| x.as_str()).unwrap_or("").to_string(),
+        session_id: summary_v
+            .get("session_id")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        mode: summary_v
+            .get("mode")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        profile_name: summary_v
+            .get("profile")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        started_at: summary_v
+            .get("started_at")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        ended_at: summary_v
+            .get("ended_at")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        dry_run: summary_v
+            .get("dry_run")
+            .and_then(|x| x.as_bool())
+            .unwrap_or(false),
+        admin: summary_v
+            .get("admin")
+            .and_then(|x| x.as_bool())
+            .unwrap_or(false),
+        status: summary_v
+            .get("status")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
         warnings_count: warnings.len(),
         evidence_dir: dir.to_string_lossy().into_owned(),
     };
@@ -426,7 +480,9 @@ pub fn read_session(session_id: &str) -> anyhow::Result<SessionDetail> {
         plan,
         evidence_md,
         bofa_export_path: bofa.exists().then(|| bofa.to_string_lossy().into_owned()),
-        sotyhub_export_path: sotyhub.exists().then(|| sotyhub.to_string_lossy().into_owned()),
+        sotyhub_export_path: sotyhub
+            .exists()
+            .then(|| sotyhub.to_string_lossy().into_owned()),
     })
 }
 
@@ -469,8 +525,8 @@ pub fn write_bofa(
 ) -> anyhow::Result<PathBuf> {
     assert_within_evidence_root(dir)?;
     let path = dir.join("bofa_export.json");
-    let preflight_passed = summary.status == "completed"
-        && !warnings.iter().any(|w| w.severity == "error");
+    let preflight_passed =
+        summary.status == "completed" && !warnings.iter().any(|w| w.severity == "error");
     let payload = BofaExport {
         schema: 1,
         producer: "sotyroute-desktop",
@@ -512,10 +568,7 @@ pub fn write_sotyhub(
 ) -> anyhow::Result<PathBuf> {
     assert_within_evidence_root(dir)?;
     let path = dir.join("sotyhub_export.json");
-    let operator = profile
-        .owner
-        .as_deref()
-        .unwrap_or("unknown");
+    let operator = profile.owner.as_deref().unwrap_or("unknown");
     let payload = SotyhubExport {
         schema: 1,
         producer: "sotyroute-desktop",
