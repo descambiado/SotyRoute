@@ -84,9 +84,7 @@ fn fetch_public_ip() -> String {
             .args(["-s", "--connect-timeout", "5", "https://api.ipify.org"])
             .output();
         match out {
-            Ok(o) if o.status.success() => {
-                String::from_utf8_lossy(&o.stdout).trim().to_string()
-            }
+            Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).trim().to_string(),
             Ok(_) => "error: curl returned non-zero exit".into(),
             Err(e) => format!("error: {}", e),
         }
