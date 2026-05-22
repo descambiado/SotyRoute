@@ -20,7 +20,31 @@ pub fn run_doctor() -> CmdResult<DoctorReport> {
 
 #[tauri::command]
 pub fn load_profile(path: String) -> CmdResult<Profile> {
+    validate_profile_path(Path::new(&path))?;
     profiles::load_from_path(Path::new(&path)).map_err(err)
+}
+
+fn validate_profile_path(p: &Path) -> CmdResult<()> {
+    for component in p.components() {
+        if component == std::path::Component::ParentDir {
+            return Err("profile path must not contain parent directory (..) components".into());
+        }
+    }
+    let ext = p
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    if !matches!(ext.as_str(), "yaml" | "yml" | "json") {
+        return Err(format!(
+            "profile path must have .yaml, .yml, or .json extension (got .{})",
+            ext
+        ));
+    }
+    if p.exists() && !p.is_file() {
+        return Err("profile path must be a regular file, not a directory".into());
+    }
+    Ok(())
 }
 
 #[tauri::command]

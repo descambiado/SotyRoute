@@ -98,11 +98,73 @@ pub fn load_settings() -> AppSettings {
 }
 
 pub fn save_settings(s: &AppSettings) -> anyhow::Result<()> {
+    validate_evidence_dir(&s.evidence_dir)?;
     let p = settings_path();
     if let Some(parent) = p.parent() {
         std::fs::create_dir_all(parent)?;
     }
     std::fs::write(&p, serde_json::to_string_pretty(s)?)?;
+    Ok(())
+}
+
+fn validate_evidence_dir(dir: &str) -> anyhow::Result<()> {
+    let p = PathBuf::from(dir);
+    for component in p.components() {
+        if component == std::path::Component::ParentDir {
+            anyhow::bail!("evidence_dir must not contain parent directory (..) components");
+        }
+    }
+    let lower = dir.to_lowercase().replace('\\', "/");
+    // Reject well-known system roots that should never receive evidence writes.
+    let blocked = [
+        "c:/windows",
+        "c:/program files",
+        "c:/program files (x86)",
+        "c:/programdata",
+        "/etc",
+        "/sys",
+        "/proc",
+        "/dev",
+        "/boot",
+    ];
+    for prefix in &blocked {
+        if lower.starts_with(prefix) {
+            anyhow::bail!(
+                "evidence_dir '{}' points to a restricted system directory",
+                dir
+            );
+        }
+    }
+    Ok(())
+}
+
+fn assert_within_evidence_root(path: &Path) -> anyhow::Result<()> {
+    // Defense-in-depth: confirm the resolved write target stays inside the evidence root.
+    // We cannot canonicalize non-existent paths, so we normalize separators and check
+    // for parent-dir components + prefix match.
+    for component in path.components() {
+        if component == std::path::Component::ParentDir {
+            anyhow::bail!(
+                "path traversal rejected: parent directory component in {}",
+                path.display()
+            );
+        }
+    }
+    let root = evidence_root();
+    let root_norm = root
+        .to_string_lossy()
+        .to_lowercase()
+        .replace('\\', "/")
+        .trim_end_matches('/')
+        .to_string();
+    let path_norm = path.to_string_lossy().to_lowercase().replace('\\', "/");
+    if !path_norm.starts_with(&root_norm) {
+        anyhow::bail!(
+            "path escape rejected: {} is outside evidence root {}",
+            path.display(),
+            root.display()
+        );
+    }
     Ok(())
 }
 
@@ -128,6 +190,7 @@ pub fn write_session(
 ) -> anyhow::Result<WriteResult> {
     let session_id = new_session_id(mode);
     let dir = evidence_root().join(&folder_name(&session_id, mode));
+    assert_within_evidence_root(&dir)?;
     std::fs::create_dir_all(&dir)?;
 
     let started_at = checks.generated_at.clone();
@@ -403,6 +466,7 @@ pub fn write_bofa(
     summary: &SessionSummary,
     warnings: &[Warning],
 ) -> anyhow::Result<PathBuf> {
+    assert_within_evidence_root(dir)?;
     let path = dir.join("bofa_export.json");
     let preflight_passed = summary.status == "completed"
         && !warnings.iter().any(|w| w.severity == "error");
@@ -443,6 +507,7 @@ pub fn write_sotyhub(
     summary: &SessionSummary,
     profile: &Profile,
 ) -> anyhow::Result<PathBuf> {
+    assert_within_evidence_root(dir)?;
     let path = dir.join("sotyhub_export.json");
     let operator = profile
         .owner

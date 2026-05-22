@@ -8,6 +8,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [0.1.0] — 2026-05-22
+
+First public release. Foundation milestone.
+
 ### Added
 - Initial scaffold: Tauri 1.5 + React 18 + TypeScript + Vite desktop app.
 - Three-layer architecture: Desktop UI / Local Agent (stub) / Core Engine.
@@ -23,10 +29,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - GitHub templates: bug, feature, security, PR, CODEOWNERS, Dependabot.
 - Dark-mode UI with SOC palette (black/grey base, green/cyan ok, yellow warn, red danger, purple brand).
 
----
-
-## [0.1.0] — TBD
-
-First public release. Foundation milestone.
+### Security
+- `load_profile`: validate path rejects `..` traversal components and enforces `.yaml`/`.yml`/`.json` extension (closes #12).
+- `save_settings`: `validate_evidence_dir` rejects `..` components and blocked system roots (`C:\Windows`, `/etc`, etc.).
+- `write_session`, `write_bofa`, `write_sotyhub`: `assert_within_evidence_root` defense-in-depth check on every evidence write target.
+- `profiles::load_from_path`: fix unreachable-pattern lint (`"yaml" | "yml" | _` → `_`) that would have failed `clippy -D warnings` in CI.
 
 [Unreleased]: https://github.com/descambiado/SotyRoute/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/descambiado/SotyRoute/releases/tag/v0.1.0
