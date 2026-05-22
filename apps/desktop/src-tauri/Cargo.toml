@@ -22,7 +22,7 @@ dirs = "5.0"
 is_elevated = "0.1"
 if-addrs = "0.10"
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 
 [features]
 # Tauri custom protocol used in release builds
