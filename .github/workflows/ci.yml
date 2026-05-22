@@ -35,6 +35,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
+      - name: Create placeholder dist (tauri::generate_context! requires distDir to exist)
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force ..\dist | Out-Null; '<html></html>' | Out-File ..\dist\index.html -Encoding utf8
       - run: cargo fmt --all -- --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo build --release
