@@ -25,6 +25,7 @@ fn main() {
             export_sotyhub,
             get_settings,
             set_settings,
+            probe_tcp,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

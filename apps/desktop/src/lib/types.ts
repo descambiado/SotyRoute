@@ -53,7 +53,18 @@ export interface DoctorReport {
   tor_hint: string;
   wireguard_installed: boolean;
   wireguard_hint: string;
+  /** Present only when public_ip_check_enabled is true in settings. */
+  public_ip?: string;
   generated_at: string;
+}
+
+/** Result of a TCP reachability probe (#19). */
+export interface TcpProbeResult {
+  host: string;
+  port: number;
+  reachable: boolean;
+  latency_ms?: number;
+  error?: string;
 }
 
 export interface PlanStep {

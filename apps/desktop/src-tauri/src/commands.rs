@@ -15,7 +15,8 @@ fn err<E: ToString>(e: E) -> String {
 
 #[tauri::command]
 pub fn run_doctor() -> CmdResult<DoctorReport> {
-    Ok(system::collect_doctor())
+    let settings = evidence::load_settings();
+    Ok(system::collect_doctor(settings.public_ip_check_enabled))
 }
 
 #[tauri::command]
@@ -117,7 +118,8 @@ fn locate_examples_dir() -> Option<PathBuf> {
 #[tauri::command]
 pub fn start_observe(profile: Profile) -> CmdResult<SessionSummary> {
     let mode = Mode::Observe;
-    let checks = system::collect_doctor();
+    let settings = evidence::load_settings();
+    let checks = system::collect_doctor(settings.public_ip_check_enabled);
     let plan: Plan = planner::plan(&mode, &profile);
     let res = evidence::write_session(&mode, &profile, &checks, &plan, false).map_err(err)?;
     Ok(res.summary)
@@ -125,7 +127,8 @@ pub fn start_observe(profile: Profile) -> CmdResult<SessionSummary> {
 
 #[tauri::command]
 pub fn dry_run(mode: Mode, profile: Profile) -> CmdResult<SessionSummary> {
-    let checks = system::collect_doctor();
+    let settings = evidence::load_settings();
+    let checks = system::collect_doctor(settings.public_ip_check_enabled);
     let plan: Plan = planner::plan(&mode, &profile);
     // Lab mode in v0.1.0 is non-destructive (evidence only); we keep dry_run=true
     // for tor/wireguard/socks5 to make intent explicit.
@@ -216,6 +219,82 @@ pub fn export_sotyhub(session_id: String) -> CmdResult<String> {
 #[tauri::command]
 pub fn get_settings() -> CmdResult<AppSettings> {
     Ok(evidence::load_settings())
+}
+
+/// Result of a TCP reachability probe (issue #19).
+/// Used to verify that a SOCKS5 proxy host:port is accepting connections
+/// before the operator starts a session.
+#[derive(Serialize)]
+pub struct TcpProbeResult {
+    pub host: String,
+    pub port: u16,
+    pub reachable: bool,
+    pub latency_ms: Option<u64>,
+    pub error: Option<String>,
+}
+
+/// Attempt a TCP connection to `host:port` with a 5-second timeout.
+/// Resolves DNS so the host can be a hostname or an IP address.
+/// Safe to call at any time; it never transmits application data,
+/// only opens and immediately closes the transport connection.
+#[tauri::command]
+pub fn probe_tcp(host: String, port: u16) -> CmdResult<TcpProbeResult> {
+    use std::net::{TcpStream, ToSocketAddrs};
+    use std::time::{Duration, Instant};
+
+    // Validate host — reject obviously dangerous values before DNS lookup.
+    if host.trim().is_empty() {
+        return Err("host must not be empty".into());
+    }
+    if port == 0 {
+        return Err("port must be > 0".into());
+    }
+
+    let addr_str = format!("{}:{}", host.trim(), port);
+    let timeout = Duration::from_secs(5);
+
+    // Resolve to a socket address (handles both IP literals and hostnames).
+    let addr = match addr_str.to_socket_addrs() {
+        Ok(mut iter) => match iter.next() {
+            Some(a) => a,
+            None => {
+                return Ok(TcpProbeResult {
+                    host,
+                    port,
+                    reachable: false,
+                    latency_ms: None,
+                    error: Some("DNS resolution returned no addresses".into()),
+                });
+            }
+        },
+        Err(e) => {
+            return Ok(TcpProbeResult {
+                host,
+                port,
+                reachable: false,
+                latency_ms: None,
+                error: Some(format!("DNS resolution failed: {}", e)),
+            });
+        }
+    };
+
+    let start = Instant::now();
+    match TcpStream::connect_timeout(&addr, timeout) {
+        Ok(_) => Ok(TcpProbeResult {
+            host,
+            port,
+            reachable: true,
+            latency_ms: Some(start.elapsed().as_millis() as u64),
+            error: None,
+        }),
+        Err(e) => Ok(TcpProbeResult {
+            host,
+            port,
+            reachable: false,
+            latency_ms: None,
+            error: Some(e.to_string()),
+        }),
+    }
 }
 
 #[tauri::command]

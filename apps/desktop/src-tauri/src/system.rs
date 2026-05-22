@@ -24,15 +24,28 @@ pub struct DoctorReport {
     pub tor_hint: String,
     pub wireguard_installed: bool,
     pub wireguard_hint: String,
+    /// Present only when `public_ip_check_enabled` is true in settings.
+    /// Contains the operator's public egress IP as seen by an external probe,
+    /// or an error string prefixed with "error:" if the request failed.
+    pub public_ip: Option<String>,
     pub generated_at: String,
 }
 
-pub fn collect_doctor() -> DoctorReport {
+/// Collect a full doctor report. Pass `enable_public_ip = true` (from
+/// `AppSettings::public_ip_check_enabled`) to include the egress IP check.
+/// The flag is threaded in from `commands.rs` to avoid a circular module
+/// dependency between `system` and `evidence`.
+pub fn collect_doctor(enable_public_ip: bool) -> DoctorReport {
     let (os_name, os_version) = os_info();
     let interfaces = list_interfaces();
     let dns_servers = list_dns_servers();
     let (tor_installed, tor_hint) = detect_tor();
     let (wireguard_installed, wireguard_hint) = detect_wireguard();
+    let public_ip = if enable_public_ip {
+        Some(fetch_public_ip())
+    } else {
+        None
+    };
 
     DoctorReport {
         os_name,
@@ -46,7 +59,37 @@ pub fn collect_doctor() -> DoctorReport {
         tor_hint,
         wireguard_installed,
         wireguard_hint,
+        public_ip,
         generated_at: Utc::now().to_rfc3339(),
+    }
+}
+
+/// Fetch the operator's public egress IP using a platform-native HTTP call.
+/// Returns the IP string on success, or "error: <reason>" on failure.
+/// Uses no extra crate dependencies — delegates to PowerShell on Windows,
+/// curl on Linux/macOS.
+fn fetch_public_ip() -> String {
+    #[cfg(windows)]
+    {
+        let cmd = "(Invoke-WebRequest -Uri 'https://api.ipify.org' \
+                   -UseBasicParsing -TimeoutSec 5).Content.Trim()";
+        powershell(cmd)
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| "error: PowerShell request failed".into())
+    }
+    #[cfg(not(windows))]
+    {
+        let out = Command::new("curl")
+            .args(["-s", "--connect-timeout", "5", "https://api.ipify.org"])
+            .output();
+        match out {
+            Ok(o) if o.status.success() => {
+                String::from_utf8_lossy(&o.stdout).trim().to_string()
+            }
+            Ok(_) => "error: curl returned non-zero exit".into(),
+            Err(e) => format!("error: {}", e),
+        }
     }
 }
 

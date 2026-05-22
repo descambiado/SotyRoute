@@ -449,6 +449,7 @@ pub fn find_session_dir(session_id: &str) -> Option<PathBuf> {
 
 #[derive(Serialize)]
 struct BofaExport<'a> {
+    schema: u32,
     producer: &'static str,
     producer_version: &'static str,
     session_id: &'a str,
@@ -471,6 +472,7 @@ pub fn write_bofa(
     let preflight_passed = summary.status == "completed"
         && !warnings.iter().any(|w| w.severity == "error");
     let payload = BofaExport {
+        schema: 1,
         producer: "sotyroute-desktop",
         producer_version: env!("CARGO_PKG_VERSION"),
         session_id: &summary.session_id,
@@ -488,6 +490,7 @@ pub fn write_bofa(
 
 #[derive(Serialize)]
 struct SotyhubExport<'a> {
+    schema: u32,
     producer: &'static str,
     producer_version: &'static str,
     lab_id: Option<&'a str>,
@@ -514,6 +517,7 @@ pub fn write_sotyhub(
         .as_deref()
         .unwrap_or("unknown");
     let payload = SotyhubExport {
+        schema: 1,
         producer: "sotyroute-desktop",
         producer_version: env!("CARGO_PKG_VERSION"),
         lab_id: None,
