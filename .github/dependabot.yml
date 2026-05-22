@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/apps/desktop"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "type: chore"
+      - "area: ui"
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      # Pin Tauri API to major; only bump with intentional Tauri upgrades.
+      - dependency-name: "@tauri-apps/api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@tauri-apps/cli"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "cargo"
+    directory: "/apps/desktop/src-tauri"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "type: chore"
+      - "area: backend"
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      # Pin tauri to 1.x; bump only with intentional Tauri upgrades.
+      - dependency-name: "tauri"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tauri-build"
+        update-types: ["version-update:semver-major"]

@@ -1,0 +1,23 @@
+name: wireguard-lab
+mode: wireguard
+owner: "@descambiado"
+purpose: "Validate that a user-owned WireGuard tunnel is ready before lab work"
+transport: wireguard
+wireguard:
+  tunnel_name: "lab-wg0"
+  expected_endpoint: "wg.example-lab.local:51820"
+allowed_targets:
+  - "10.20.0.0/16"
+blocked_targets:
+  - "169.254.169.254"
+kill_switch: true
+dns_check: true
+evidence: true
+notes: |
+  WireGuard requires an existing server / configuration. SotyRoute is not a VPN provider.
+  v0.1.0 only detects WireGuard installation and validates this profile shape.
+  Actual tunnel orchestration is roadmap v0.3.0.
+tags:
+  - wireguard
+  - lab
+  - tunnel-readiness

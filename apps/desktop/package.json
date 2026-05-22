@@ -1,0 +1,30 @@
+{
+  "name": "sotyroute-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SotyRoute Desktop - traffic routing, tunnel orchestration and OPSEC evidence app for authorized security labs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:icon": "tauri icon"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.5.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.10",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  }
+}

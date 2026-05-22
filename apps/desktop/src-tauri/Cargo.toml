@@ -1,0 +1,37 @@
+[package]
+name = "sotyroute"
+version = "0.1.0"
+description = "SotyRoute Desktop - traffic routing, tunnel orchestration and OPSEC evidence app for authorized security labs"
+authors = ["David Hernández (@descambiado)"]
+license = "MIT"
+repository = "https://github.com/descambiado/SotyRoute"
+edition = "2021"
+rust-version = "1.70"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+chrono = { version = "0.4", features = ["serde"] }
+whoami = "1.4"
+dirs = "5.0"
+is_elevated = "0.1"
+if-addrs = "0.10"
+anyhow = "1.0"
+thiserror = "1.0"
+
+[features]
+# Tauri custom protocol used in release builds
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

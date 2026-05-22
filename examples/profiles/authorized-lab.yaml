@@ -1,0 +1,24 @@
+name: authorized-lab
+mode: lab
+owner: "@descambiado"
+purpose: "Authorized security lab traffic validation"
+transport: observe
+allowed_targets:
+  - "10.10.10.0/24"
+  - "192.168.56.0/24"
+  - "example-lab.local"
+blocked_targets:
+  - "169.254.169.254"
+  - "metadata.google.internal"
+  - "metadata.azure.internal"
+kill_switch: true
+dns_check: true
+evidence: true
+notes: |
+  No third-party testing without written authorization.
+  Operator: @descambiado.
+  This profile is a template — replace targets with your actual lab CIDRs.
+tags:
+  - authorized-lab
+  - opsec
+  - routing-validation

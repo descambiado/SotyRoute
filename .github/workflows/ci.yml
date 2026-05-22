@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-frontend:
+    name: Frontend type-check
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: npm install --no-audit --no-fund
+      - run: npx tsc --noEmit
+
+  build-rust:
+    name: Build Rust backend
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo build --release
+
+  tauri-build:
+    name: Tauri MSI build (Windows)
+    runs-on: windows-latest
+    needs: [lint-frontend, build-rust]
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: npm install --no-audit --no-fund
+      - name: Generate placeholder icons
+        shell: pwsh
+        run: |
+          if (-not (Test-Path src-tauri/icons/icon.png)) {
+            Write-Host "Skipping bundle: icons not generated. Run 'npm run tauri icon path/to/logo.png' locally before tagging a release."
+            exit 0
+          }
+          npm run tauri build

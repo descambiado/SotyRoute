@@ -1,0 +1,12 @@
+# SotyRoute CODEOWNERS
+# Every PR requires review from the maintainer.
+# Add domain owners as the team grows.
+
+* @descambiado
+
+# Security-sensitive paths require explicit sign-off
+SECURITY.md @descambiado
+docs/threat-model.md @descambiado
+docs/legal-scope.md @descambiado
+apps/desktop/src-tauri/src/evidence.rs @descambiado
+apps/desktop/src-tauri/src/planner.rs @descambiado

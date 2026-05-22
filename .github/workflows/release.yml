@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  build-msi:
+    name: Build Windows MSI
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build MSI
+        run: npm run tauri build
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sotyroute-${{ github.ref_name }}-windows-x64
+          path: apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "SotyRoute ${{ github.ref_name }}"
+          draft: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+          body: |
+            ## SotyRoute ${{ github.ref_name }}
+
+            ### Installation
+            Download the `.msi` installer and run it. WebView2 is required (pre-installed on Windows 11; available from Microsoft for Windows 10).
+
+            ### What's new
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+            ### Verification
+            ```
+            # SHA-256 of the MSI (verify before installing)
+            certutil -hashfile SotyRoute_*.msi SHA256
+            ```
+
+            ### Legal
+            For authorized security labs only. See [docs/legal-scope.md](https://github.com/${{ github.repository }}/blob/main/docs/legal-scope.md).

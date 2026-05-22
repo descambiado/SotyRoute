@@ -1,0 +1,24 @@
+name: socks5-basic
+mode: socks5
+owner: "@descambiado"
+purpose: "Validate a SOCKS5 proxy profile for application-cooperative routing"
+transport: socks5
+socks5:
+  host: "127.0.0.1"
+  port: 9050
+  auth: none
+allowed_targets:
+  - "example-lab.local"
+blocked_targets:
+  - "169.254.169.254"
+kill_switch: false
+dns_check: true
+evidence: true
+notes: |
+  Not all applications respect SOCKS5 proxy settings.
+  v0.1.0 only validates the profile shape and checks whether the SOCKS port is reachable.
+  System-wide enforcement is not in scope for v0.1.0.
+tags:
+  - socks5
+  - proxy
+  - per-app
