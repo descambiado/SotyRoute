@@ -38,6 +38,39 @@ Docs only — no code, schema, or behaviour changes.
 
 No runtime behaviour changed — all new code is inert types and data.
 
+### Added (PR 4)
+- `src/pages/SotyDashboard.tsx` — SOTY Score dashboard page at route `/soty`.
+  Surfaces the PR 3 deterministic scoring engine via four demo presets
+  (SOTY_READY · SOTY_WARN · SOTY_EXPOSED · SOTY_BLOCKED) computed at module load
+  time from `computeSotyScore()`. Demo preset selector, Big SOTY Score hero
+  (circular ring, variant colour, operator copy), sub-score grid (5 cards with
+  weight labels and hint text), deduction list with severity badges and blocking
+  flags, de-duplicated recommended fix list, Route Pack quick-action grid (8 packs,
+  UI-preview only), and five disabled CTA placeholders
+  (Make me SOTY-ready · Build Mission Route · Run Host Guard · Open OSINT Navigator ·
+  Launch BOFA Route).
+- `src/components/soty/` — six focused components:
+  `SotyStateBadge`, `SotyScoreHero`, `SotySubscoreGrid`, `SotyDeductionList`,
+  `RecommendedFixList`, `RoutePackQuickActions`.
+- `src/lib/sotyDemoInput.ts` — four `SotyScoreInput` presets and the computed
+  `DEMO_PRESETS` record. Zero I/O, zero side-effects.
+- `src/lib/sotyPresenter.ts` — pure presenter helpers:
+  `sotyStateToVariant()`, `sotyStateToCopy()`, `scoreToVariant()`,
+  `severityToVariant()`, `subscoreHint()`, `dedupFixes()`.
+- `src/styles/global.css` — SOTY-specific CSS classes:
+  `.soty-score-hero`, `.soty-score-ring`, `.soty-score-number`, `.subscore-grid`,
+  `.subscore-card`, `.deduction-row`, `.fix-row`, `.pack-grid`, `.pack-card`,
+  `.soty-cta-row`, `.demo-selector`.
+- `src/App.tsx` — `/soty` route added.
+- `src/components/Sidebar.tsx` — "SOTY Score" nav item added (position 2).
+- `src/__tests__/sotyDemoInput.test.ts` and `sotyPresenter.test.ts` —
+  57 new unit tests covering state correctness, score ranges, deduction structure,
+  presenter helpers, and fix deduplication.
+- `docs/soty-score.md` — PR 4 dashboard status section added; roadmap section updated.
+
+**All CTAs are disabled placeholders. No system checks run. No mutations occur.**
+Total vitest suite: 122 passing. No Rust changes.
+
 ### Added (PR 3)
 - `src/lib/sotyScoreRules.ts` — `SotyScoreInput` type; five deterministic, pure rule
   functions (`routeRules`, `hostRules`, `scopeRules`, `intelRules`, `evidenceRules`);

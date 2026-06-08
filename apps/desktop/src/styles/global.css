@@ -306,3 +306,206 @@ label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6p
 /* ----- Footer micro ----- */
 .muted { color: var(--text-2); font-size: 12px; }
 .mono { font-family: var(--mono); }
+
+/* ================================================================
+   SOTY Score Dashboard  (PR 4)
+   All classes scoped to .soty-* or explicit child selectors to
+   avoid collisions with existing component styles.
+   ================================================================ */
+
+/* ----- Score hero card ----- */
+.soty-score-hero {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+/* Circular score ring */
+.soty-score-ring {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 4px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.soty-score-ring.ok    { border-color: var(--ok);     box-shadow: 0 0 22px rgba(74, 222, 128, 0.14); }
+.soty-score-ring.warn  { border-color: var(--warn);   box-shadow: 0 0 22px rgba(250, 204, 21, 0.14); }
+.soty-score-ring.danger{ border-color: var(--danger); box-shadow: 0 0 22px rgba(248, 113, 113, 0.14); }
+.soty-score-ring.idle  { border-color: var(--border-strong); }
+
+/* Big score number inside the ring */
+.soty-score-number {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.soty-score-number.ok    { color: var(--ok); }
+.soty-score-number.warn  { color: var(--warn); }
+.soty-score-number.danger{ color: var(--danger); }
+.soty-score-number.idle  { color: var(--text-1); }
+
+/* Hero body */
+.soty-hero-body { display: flex; flex-direction: column; gap: 6px; }
+.soty-hero-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.soty-hero-copy { font-size: 14px; font-weight: 500; color: var(--text-0); }
+.soty-hero-meta { font-size: 12px; color: var(--text-2); }
+
+/* ----- Sub-score grid ----- */
+.subscore-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.subscore-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.subscore-card.ok    { border-left-color: var(--ok); }
+.subscore-card.warn  { border-left-color: var(--warn); }
+.subscore-card.danger{ border-left-color: var(--danger); }
+.subscore-card.idle  { border-left-color: var(--border-strong); }
+
+.subscore-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.subscore-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.subscore-value.ok    { color: var(--ok); }
+.subscore-value.warn  { color: var(--warn); }
+.subscore-value.danger{ color: var(--danger); }
+.subscore-value.idle  { color: var(--text-1); }
+.subscore-hint {
+  font-size: 11.5px;
+  color: var(--text-2);
+  margin-top: 5px;
+}
+
+/* ----- Two-col analysis layout ----- */
+.soty-analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+/* ----- Deduction list ----- */
+.deduction-list { display: flex; flex-direction: column; gap: 8px; }
+
+.deduction-row {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.deduction-row.blocking { border-left: 3px solid var(--danger); }
+
+.deduction-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.deduction-reason  { font-size: 13px; color: var(--text-0); margin-bottom: 4px; }
+.deduction-meta    { font-size: 11.5px; color: var(--text-2); font-family: var(--mono); }
+
+/* ----- Fix list ----- */
+.fix-list { display: flex; flex-direction: column; gap: 8px; }
+
+.fix-row {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.fix-title { font-weight: 500; font-size: 13px; margin-bottom: 4px; color: var(--text-0); }
+.fix-desc  { font-size: 12.5px; color: var(--text-1); margin-bottom: 8px; }
+.fix-tags  { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ----- Route pack grid ----- */
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pack-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 80ms ease, background 80ms ease;
+  user-select: none;
+}
+.pack-card:hover { border-color: var(--border-strong); background: var(--bg-3); }
+.pack-card:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.pack-card.selected { border-color: var(--brand); background: var(--brand-bg); }
+.pack-card.selected .pack-name { color: var(--brand); }
+
+.pack-name { font-weight: 500; font-size: 13px; margin-bottom: 4px; color: var(--text-0); }
+.pack-desc { font-size: 12px; color: var(--text-2); line-height: 1.4; }
+
+.pack-detail {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-top: 4px;
+}
+.pack-detail h3 { margin: 0 0 8px; font-size: 15px; }
+.pack-detail p  { font-size: 13px; color: var(--text-1); margin: 0 0 12px; line-height: 1.5; }
+
+/* ----- CTA / action row ----- */
+.soty-cta-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+/* ----- Demo preset selector ----- */
+.demo-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  padding: 12px 14px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.demo-selector-label {
+  font-size: 11.5px;
+  color: var(--text-2);
+  font-family: var(--mono);
+  margin-right: 4px;
+  flex-shrink: 0;
+}

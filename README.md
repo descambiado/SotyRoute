@@ -12,9 +12,15 @@ Maintained by [@descambiado](https://github.com/descambiado) as part of the **So
 
 > **Status note.** What exists today (v0.2.x) is the **preflight + evidence** foundation: Observe,
 > dry-run planning, Doctor checks, evidence bundles and BOFA / SotyHUB exports. The SOTY direction
-> below — **SOTY Score**, **Soty Agent**, **Route Packs**, **Host Guard** and the **Ethical OSINT
-> Navigator** — is the **v0.3.0 design track** and is **not implemented yet**. Each is marked as a
-> design spec so this README does not over-claim. See [docs/roadmap.md](docs/roadmap.md).
+> is the **v0.3.0 design track**, being built incrementally via PRs 2–11.
+>
+> **Shipped so far:**
+> - **PR 2** — TypeScript schemas for SOTY Score, Route Cards, Route Packs, BOFA Gate.
+> - **PR 3** — Deterministic SOTY scoring engine (pure TypeScript, 29 deduction codes, 65 tests).
+> - **PR 4** — [SOTY Score dashboard](/soty) — big score ring, state badge, deduction list, recommended fixes, Route Pack preview, placeholder CTAs.
+>
+> Remaining modules (**Soty Agent**, **Host Guard**, **Ethical OSINT Navigator**, **BOFA Gate UI**) are design specs and arrive in PRs 5–11.
+> See [docs/roadmap.md](docs/roadmap.md).
 
 ---
 
