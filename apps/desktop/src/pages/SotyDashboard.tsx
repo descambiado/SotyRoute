@@ -1,30 +1,54 @@
 /**
- * SotyDashboard — PR 4 SOTY Score dashboard page.
+ * SotyDashboard — SOTY Score dashboard (PR 4 + PR 5).
  *
- * Shows the deterministic SOTY Score from the PR 3 scoring engine using
- * four demo presets (ready / warn / exposed / blocked). All CTA buttons
- * are disabled placeholders — no system mutations occur in PR 4.
+ * PR 4: Deterministic SOTY Score with four demo presets, deduction list,
+ *       recommended fixes, and route pack previews.
+ * PR 5: Mission-to-Route Builder — local deterministic Soty Agent.
+ *       "Build Mission Route" CTA now scrolls to and activates the builder.
  *
- * Safety: UI only. No external API calls. No system modifications.
- *         All "Make me SOTY-ready / Run Host Guard / Launch BOFA" actions
- *         are explicitly disabled pending their respective PRs (5, 7, 10).
+ * Safety: UI only. No external API calls. No AI inference. No system mutations.
+ *         "Make me SOTY-ready", "Run Host Guard", "Launch BOFA Route" and
+ *         "Open OSINT Navigator" remain disabled pending their respective PRs.
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   DEMO_PRESETS,
   DEMO_PRESET_KEYS,
   DEMO_PRESET_LABELS,
   type DemoPresetKey,
 } from "../lib/sotyDemoInput";
+import { buildRouteCard } from "../lib/sotyRouteBuilder";
+import type { MissionType, RouteCard } from "../types/routeCard";
 import SotyScoreHero from "../components/soty/SotyScoreHero";
 import SotySubscoreGrid from "../components/soty/SotySubscoreGrid";
 import SotyDeductionList from "../components/soty/SotyDeductionList";
 import RecommendedFixList from "../components/soty/RecommendedFixList";
 import RoutePackQuickActions from "../components/soty/RoutePackQuickActions";
+import SotyMissionBuilder from "../components/soty/SotyMissionBuilder";
+import SotyRouteCardPanel from "../components/soty/SotyRouteCardPanel";
 
 export default function SotyDashboard() {
   const [preset, setPreset] = useState<DemoPresetKey>("ready");
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+
+  // ── Mission builder state (PR 5) ─────────────────────────────────────────
+  const [selectedMission, setSelectedMission] = useState<MissionType | null>(null);
+  const [builtCard, setBuiltCard] = useState<RouteCard | null>(null);
+  const missionBuilderRef = useRef<HTMLDivElement>(null);
+
+  function handleBuildRoute() {
+    if (!selectedMission) return;
+    // Pure deterministic call — no I/O, no mutations.
+    setBuiltCard(buildRouteCard(selectedMission));
+  }
+
+  /** Scrolls to the mission builder and optionally pre-selects a mission. */
+  function handleScrollToBuilder(defaultMission?: MissionType) {
+    if (defaultMission && !selectedMission) {
+      setSelectedMission(defaultMission);
+    }
+    missionBuilderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   const score = DEMO_PRESETS[preset];
 
@@ -40,10 +64,10 @@ export default function SotyDashboard() {
 
       {/* Information banner */}
       <div className="banner">
-        This dashboard surfaces the deterministic SOTY Score from the PR&nbsp;3 scoring engine.
-        Use the demo presets below to see how each posture state looks. Real system checks —
-        which require user-initiated runs — arrive in PR&nbsp;7 (Host Guard) and PR&nbsp;5
-        (Mission Route). <strong>No system checks are run and no settings are changed here.</strong>
+        <strong>What's here:</strong> SOTY Score from the PR&nbsp;3 deterministic engine (demo
+        presets) · Mission-to-Route Builder (PR&nbsp;5) — local deterministic planner, no
+        external AI call. Real system checks (Host Guard, PR&nbsp;7) and settings changes require
+        separate user initiation. <strong>No system checks run and no settings are changed here.</strong>
       </div>
 
       {/* Demo preset selector */}
@@ -82,26 +106,43 @@ export default function SotyDashboard() {
         onSelect={setSelectedPackId}
       />
 
-      {/* ── Action CTAs — all disabled in PR 4 ── */}
-      <div style={{ marginTop: 32 }}>
+      {/* ── Mission-to-Route Builder (PR 5) ── */}
+      <hr className="section-divider" />
+      <div ref={missionBuilderRef}>
+        <SotyMissionBuilder
+          selectedMission={selectedMission}
+          onMissionChange={setSelectedMission}
+          onBuild={handleBuildRoute}
+        />
+
+        {builtCard && (
+          <div style={{ marginTop: 16 }}>
+            <SotyRouteCardPanel card={builtCard} />
+          </div>
+        )}
+      </div>
+
+      {/* ── Action CTAs ── */}
+      <hr className="section-divider" />
+      <div>
         <h2 style={{ margin: "0 0 8px", fontSize: 16 }}>Actions</h2>
         <p className="muted" style={{ marginBottom: 14 }}>
-          All action buttons are planned features. They are disabled in PR&nbsp;4.
-          No system modifications are made — mutations require explicit confirmation
-          and land in their respective PRs.
+          "Build Mission Route" scrolls to the Mission Builder above.
+          Remaining actions are planned features, disabled until their respective PRs ship.
+          No system modifications are made without explicit confirmation.
         </p>
         <div className="soty-cta-row">
           <button
             className="btn primary"
             disabled
-            title="Automatic remediation — planned for a future PR. No changes made now."
+            title="Automatic remediation — planned for a future PR. No system changes made now."
           >
             Make me SOTY-ready
           </button>
           <button
             className="btn"
-            disabled
-            title="Mission route builder — planned for PR 5."
+            onClick={() => handleScrollToBuilder("investigate_domain")}
+            title="Scroll to the Mission-to-Route Builder section."
           >
             Build Mission Route
           </button>

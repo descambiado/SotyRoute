@@ -75,19 +75,55 @@ Mission **"work from public WiFi"** might yield:
 - **No high-risk automation.** It does not scrape, does not search credential dumps, and does not
   open policy-blocked OSINT categories. See [docs/legal-scope.md](legal-scope.md).
 
-## 5. Route Card type status (PR 2)
+## 5. PR 5 local route builder status
+
+The deterministic Mission-to-Route Builder is now live (PR 5, frontend-only).
+No external AI is called. No system checks are run. The builder is a pure
+local rule engine.
+
+**Route `/soty` — Mission Builder section in `src/pages/SotyDashboard.tsx`:**
+
+- **Mission type grid** — 10 mission buttons; selecting one shows the mission description.
+- **"Build Route Card" button** — calls `buildRouteCard(missionType)` (pure, deterministic).
+- **Route Card panel** — full `SotyRouteCardPanel` showing all RouteCard fields:
+  recommended mode, recommended route pack, required checks, risk warnings, scope
+  requirements, evidence settings, BOFA allowed/disallowed modules, and next safe actions.
+- **Disclaimer badge**: "Local deterministic planner — no external AI call in this version."
+- **"Build Mission Route" CTA** (previously disabled) now scrolls to the builder.
+
+**New library files:**
+
+| File | Purpose |
+|---|---|
+| `src/lib/sotyMissionCatalog.ts` | Static definitions for all 10 missions (`MissionDefinition` shape, `MISSION_CATALOG` record). |
+| `src/lib/sotyRouteBuilder.ts` | `buildRouteCard(missionType, options?)` — pure, deterministic, no I/O. |
+| `src/lib/sotyRouteCardPresenter.ts` | Presenter helpers: `missionTypeToLabel`, `modeToLabel`, `evidenceLevelToHint`, `routeCardBofaSummary`, `recommendedRoutePackId`, etc. |
+
+**New components in `src/components/soty/`:**
+`SotyMissionBuilder` (controlled mission selector), `SotyRouteCardPanel` (card display).
+
+**Tests:** 61 new unit tests across `sotyRouteBuilder.test.ts` and
+`sotyRouteCardPresenter.test.ts`, including:
+- every MissionType generates a RouteCard ✓
+- determinism with fixed timestamp ✓
+- BOFA is fully blocked for `public_wifi` ✓
+- `privacy_route` disclaims anonymity in risk_warnings ✓
+- `check_hash` warns against executing unknown files ✓
+- no RouteCard contains unsafe wording (doxxing, guaranteed anonymity, etc.) ✓
+
+Total vitest suite: 183 passing. No Rust changes. No external API calls. No system mutations.
+
+## 6. Route Card type status (PR 2)
 
 The following TypeScript types are now available (PR 2, frontend-only):
 
 - `MissionType` — the ten mission values and the `MISSION_TYPES` runtime array.
 - `RouteCard` — the full Route Card record shape.
 
-The deterministic rule engine that produces Route Cards arrives in PR 5.
+## 7. Roadmap position
 
-## 6. Roadmap position
-
-- **PR 2** — schema/types for the Route Card.
-- **PR 5** — Mission-to-Route builder (this document's behaviour) using the local rule engine.
+- **PR 2** — schema/types for the Route Card. ✓ Done
+- **PR 5** — Mission-to-Route builder (this document's behaviour). ✓ Done
 - **PR 8** — Route Cards reference the Ethical OSINT Navigator catalog.
 
 See [docs/roadmap.md](roadmap.md).

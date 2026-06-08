@@ -17,9 +17,10 @@ Maintained by [@descambiado](https://github.com/descambiado) as part of the **So
 > **Shipped so far:**
 > - **PR 2** — TypeScript schemas for SOTY Score, Route Cards, Route Packs, BOFA Gate.
 > - **PR 3** — Deterministic SOTY scoring engine (pure TypeScript, 29 deduction codes, 65 tests).
-> - **PR 4** — [SOTY Score dashboard](/soty) — big score ring, state badge, deduction list, recommended fixes, Route Pack preview, placeholder CTAs.
+> - **PR 4** — [SOTY Score dashboard](/soty) — big score ring, state badge, deduction list, recommended fixes, Route Pack preview.
+> - **PR 5** — Mission-to-Route Builder — deterministic local Soty Agent (no external AI call); all 10 mission types; full Route Card panel.
 >
-> Remaining modules (**Soty Agent**, **Host Guard**, **Ethical OSINT Navigator**, **BOFA Gate UI**) are design specs and arrive in PRs 5–11.
+> Remaining modules (**Host Guard**, **Ethical OSINT Navigator**, **BOFA Gate UI**) are design specs and arrive in PRs 6–11.
 > See [docs/roadmap.md](docs/roadmap.md).
 
 ---

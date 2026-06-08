@@ -509,3 +509,147 @@ label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6p
   margin-right: 4px;
   flex-shrink: 0;
 }
+
+/* ================================================================
+   Mission Builder  (PR 5)
+   ================================================================ */
+
+/* ----- Section divider ----- */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0 28px;
+}
+
+/* ----- Mission type grid (5-col on wide, 2-col on narrow) ----- */
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.mission-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-0);
+  font-size: 12px;
+  font-family: var(--sans);
+  line-height: 1.35;
+  transition: border-color 80ms ease, background 80ms ease;
+}
+.mission-btn:hover { border-color: var(--border-strong); background: var(--bg-3); }
+.mission-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.mission-btn.selected { border-color: var(--brand); background: var(--brand-bg); color: var(--brand); }
+
+/* ----- Mission builder container ----- */
+.mission-builder {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px 28px;
+  margin-bottom: 16px;
+}
+.mission-builder-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.mission-builder-title { margin: 0 0 4px; font-size: 16px; }
+.mission-builder-sub { font-size: 12.5px; color: var(--text-2); }
+
+/* ----- Mission description card (shown below grid) ----- */
+.mission-desc-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--brand);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-1);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* ----- Route Card panel ----- */
+.route-card-panel {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px 28px;
+}
+.rc-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.rc-panel-header h3 { margin: 0; font-size: 16px; }
+.rc-summary { font-size: 13px; color: var(--text-1); line-height: 1.5; margin-bottom: 20px; }
+
+/* ----- Route card metadata row ----- */
+.rc-meta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.rc-meta-item { display: flex; flex-direction: column; gap: 3px; }
+.rc-meta-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-2); }
+.rc-meta-value { font-size: 13px; color: var(--text-0); font-family: var(--mono); }
+
+/* ----- Route card section ----- */
+.rc-section { margin-bottom: 18px; }
+.rc-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin: 0 0 8px;
+}
+
+/* ----- Tag / chip lists (checks, resources, modules) ----- */
+.rc-tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.rc-tag {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 12px;
+  color: var(--text-1);
+  font-family: var(--mono);
+}
+.rc-tag.allowed  { border-color: var(--ok);   color: var(--ok); }
+.rc-tag.blocked  { border-color: var(--danger); color: var(--danger); }
+.rc-tag.resource { border-color: var(--info); color: var(--info); }
+
+/* ----- Next safe actions list ----- */
+.rc-action-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.rc-action-list li { font-size: 13px; color: var(--text-0); padding-left: 18px; position: relative; line-height: 1.4; }
+.rc-action-list li::before { content: "→"; position: absolute; left: 0; color: var(--brand); font-weight: 600; }
+
+/* ----- Planner disclaimer badge ----- */
+.planner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--brand-bg);
+  border: 1px solid var(--brand);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  color: var(--brand);
+  font-family: var(--mono);
+  white-space: nowrap;
+}

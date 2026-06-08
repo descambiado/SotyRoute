@@ -38,6 +38,44 @@ Docs only — no code, schema, or behaviour changes.
 
 No runtime behaviour changed — all new code is inert types and data.
 
+### Added (PR 5)
+- `src/lib/sotyMissionCatalog.ts` — static `MissionDefinition` catalog for all 10 mission
+  types. Each definition includes: title, summary, selector description, recommended mode,
+  recommended route pack ID, required checks, OSINT resource categories, risk warnings, scope
+  requirements, evidence settings, BOFA allowed/disallowed modules, next safe actions.
+- `src/lib/sotyRouteBuilder.ts` — `buildRouteCard(missionType, options?)` pure deterministic
+  entry point. Produces a fully-populated `RouteCard` from the catalog. Pure: no I/O, no
+  side-effects, fully deterministic for fixed `options.timestamp`.
+  `generateRouteCardId()` produces stable IDs with format `rc_<mission>_<ts>`.
+- `src/lib/sotyRouteCardPresenter.ts` — pure presenter helpers: `missionTypeToLabel()`,
+  `missionTypeToDescription()`, `recommendedRoutePackId()`, `modeToLabel()`,
+  `evidenceLevelToHint()`, `routeCardHasBofaRestrictions()`, `routeCardBofaIsBlocked()`,
+  `routeCardBofaSummary()`.
+- `src/components/soty/SotyMissionBuilder.tsx` — controlled mission selector grid (10 buttons)
+  with description card, "Build Route Card" button, and "Local deterministic planner —
+  no external AI call in this version." disclaimer badge.
+- `src/components/soty/SotyRouteCardPanel.tsx` — full Route Card display: metadata row
+  (mode, evidence, pack, created), two-column body (required checks, risk warnings, scope
+  requirements · resources, evidence hint, BOFA status, pack detail), next safe actions,
+  read-only footer disclaimer.
+- `src/pages/SotyDashboard.tsx` — mission builder section added; "Build Mission Route" CTA
+  **enabled** (scrolls to builder, pre-selects a default mission — no mutations).
+- `src/styles/global.css` — mission builder CSS: `.mission-grid`, `.mission-btn`,
+  `.mission-builder`, `.mission-desc-card`, `.route-card-panel`, `.rc-*` classes,
+  `.planner-badge`, `.section-divider`.
+- `src/__tests__/sotyRouteBuilder.test.ts` and `sotyRouteCardPresenter.test.ts` —
+  61 new unit tests including every-MissionType coverage, determinism, BOFA blocking rules,
+  privacy disclaimer, execute-file warning, scope validation, and full safety audit
+  (no doxxing / no guaranteed anonymity wording).
+- `docs/soty-agent.md` — PR 5 local route builder status section added.
+- `docs/route-packs.md` — Mission → Route Pack mapping table added (§5).
+
+**Safety guarantees maintained in PR 5:**
+No external AI API calls. No OSINT resource URLs or catalogs added. No host scanning.
+No firewall/routing/DNS/proxy modifications. No Rust or Tauri command changes.
+No mutations of any kind — all Route Cards are read-only recommendations.
+Total vitest suite: 183 passing. `tsc --noEmit` exit 0.
+
 ### Added (PR 4)
 - `src/pages/SotyDashboard.tsx` — SOTY Score dashboard page at route `/soty`.
   Surfaces the PR 3 deterministic scoring engine via four demo presets
