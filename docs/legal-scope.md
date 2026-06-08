@@ -39,6 +39,22 @@ Anyone marketing routing software as "untraceable" is either uninformed or disho
 
 SotyRoute is software. There are no SotyRoute servers. There is no SotyRoute network. WireGuard mode requires a server the operator controls or is authorized to use; Tor mode requires the operator's own Tor installation; SOCKS5 mode requires a SOCKS proxy the operator is authorized to use.
 
+## Not an antivirus, EDR, or OSINT scraper
+
+The SOTY direction (v0.3.0, design — see [roadmap.md](roadmap.md)) does **not** change these
+boundaries:
+
+- **Host Guard is not an antivirus or EDR.** It provides defensive posture checks and cannot
+  guarantee that the host is clean.
+- The **Ethical OSINT Navigator does not scrape** any source, does not log user queries, and opens
+  external resources in the system browser — never an embedded WebView.
+- High-risk OSINT categories (pastebin search, dark-web research, credential-exposure platforms,
+  high-risk forums, people-search) are **opt-in and disabled by default**.
+- Doxxing, carding, fraud, stolen-account use, CVV shops, illegal malware marketplaces and
+  identity lookup without authorization are **blocked by policy** and will not be shipped as
+  resources.
+- SotyRoute does **not** automate credential-dump searches.
+
 ## Operator responsibility
 
 By running SotyRoute the operator declares that they:

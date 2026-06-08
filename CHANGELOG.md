@@ -8,6 +8,18 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Product docs for the **SOTY direction** (v0.3.0 design track): `docs/soty-score.md`,
+  `docs/soty-agent.md`, `docs/route-packs.md` — design specs for SOTY Score, Soty Agent
+  (Route Card) and Route Packs.
+- README rebrand to "the AI OPSEC Route" with the tagline *Before you operate, become
+  SOTY-ready.*, a "What SOTY means" section, and SOTY Score / Soty Agent / Route Packs overviews.
+- Expanded permanent safety boundaries in README §7 (not an AV/EDR, not a doxxing tool, no leak
+  scraping, no credential-dump automation) and new roadmap non-goals.
+- Roadmap: v0.3.0 SOTY track mapped to the PR 1–11 plan.
+
+Docs only — no code, schema, or behaviour changes.
+
 ---
 
 ## [0.1.0] — 2026-05-22
