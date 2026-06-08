@@ -38,6 +38,25 @@ Docs only — no code, schema, or behaviour changes.
 
 No runtime behaviour changed — all new code is inert types and data.
 
+### Added (PR 3)
+- `src/lib/sotyScoreRules.ts` — `SotyScoreInput` type; five deterministic, pure rule
+  functions (`routeRules`, `hostRules`, `scopeRules`, `intelRules`, `evidenceRules`);
+  `applyDeductions()` clamped utility. 29 deduction codes across 5 categories; 3 blocking
+  deductions (`SCOPE_OUT_OF_SCOPE`, `SCOPE_BLOCKED_TARGET`, `INTEL_BLOCKED_RESOURCE`).
+  Every deduction carries `reason`, `recommended_fix`, `related_signal`, `blocking`.
+- `src/lib/sotyScoreState.ts` — `weightedOverall()` (route 30% · host 20% · scope 25% ·
+  intel 10% · evidence 15%) and `determineSotyState()` with the full 6-case precedence
+  chain. Exports `SCORE_WEIGHTS` constant.
+- `src/lib/sotyScoreEngine.ts` — `computeSotyScore(input, options?)` entry point.
+  Pure, side-effect free, fully deterministic for fixed `options.timestamp`.
+- `src/__tests__/sotyScoreEngine.test.ts` — 28 tests covering all rule categories,
+  clamping, blocking override, side-effect freedom, and recommended_fix completeness.
+- `src/__tests__/sotyScoreState.test.ts` — 18 tests covering every state transition,
+  weight correctness and determinism.
+- `docs/soty-score.md`: PR 3 engine status section added.
+
+Total vitest suite: 65 passing. No Rust changes. No UI changes.
+
 ---
 
 ## [0.1.0] — 2026-05-22
