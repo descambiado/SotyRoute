@@ -1,26 +1,50 @@
 # SotyRoute Desktop
 
-**Windows-first traffic routing, tunnel orchestration and OPSEC evidence app for authorized security labs.**
+**The AI OPSEC Route for security operators — Windows-first.**
 
-> *Before running tools, know where your traffic goes.*
+> *Before you operate, become SOTY-ready.*
+>
+> *(Before running tools, know where your traffic goes.)*
 
-SotyRoute Desktop is a desktop application for security engineers, detection engineers, and pentesters working in **authorized** lab environments. It validates routing posture, tunnel readiness, DNS configuration, and lab scope **before** you run offensive tooling — and generates structured evidence (`session.json`, `evidence.md`, BOFA / SotyHUB exports) suitable for engagement reports and audit trails.
+SotyRoute Desktop is a desktop application for security engineers, detection engineers, and pentesters working in **authorized** lab environments. It is an **AI-assisted OPSEC route builder**: it helps you become **SOTY-ready** — with route, scope, host posture and evidence in order — *before* you touch the internet, open OSINT sources, connect to labs, use VPN / WireGuard / Tor / SOCKS, or launch BOFA workflows. Every session generates structured evidence (`session.json`, `evidence.md`, BOFA / SotyHUB exports) suitable for engagement reports and audit trails.
 
 Maintained by [@descambiado](https://github.com/descambiado) as part of the **SotyHUB** ecosystem (alongside **BOFA**).
 
+> **Status note.** What exists today (v0.2.x) is the **preflight + evidence** foundation: Observe,
+> dry-run planning, Doctor checks, evidence bundles and BOFA / SotyHUB exports. The SOTY direction
+> below — **SOTY Score**, **Soty Agent**, **Route Packs**, **Host Guard** and the **Ethical OSINT
+> Navigator** — is the **v0.3.0 design track** and is **not implemented yet**. Each is marked as a
+> design spec so this README does not over-claim. See [docs/roadmap.md](docs/roadmap.md).
+
 ---
+
+## 0. What SOTY means
+
+**SOTY** can mean Student of the Year, Son of the Year, Shooter of the Year — or **Security
+Operator of the Year**. In SotyRoute, **SOTY** means someone who operates with **route,
+discipline, OPSEC, scope, evidence and technical precision**.
+
+Becoming *SOTY-ready* is the whole point: get your posture in order **before** you operate, not
+after something leaks.
 
 ## 1. What is SotyRoute?
 
 SotyRoute is not a VPN. It is not Tor. It does not promise anonymity.
 
-It is a **preflight + evidence layer** for network operations:
+It is an **AI-assisted OPSEC route builder** built on a **preflight + evidence layer** for network
+operations:
 
 - Captures **where your traffic is going** before you run tools.
 - Validates **lab scope** declared in YAML profiles.
 - Plans (dry-run) every routing change before executing it.
 - Generates **evidence bundles** for audit.
 - Exports to **BOFA** and **SotyHUB** for downstream automation.
+
+The **SOTY direction (v0.3.0, design)** adds a readiness layer on top of this foundation:
+
+- **SOTY Score** — an explainable readiness score and state. See [§15](#15-soty-score-v030-design).
+- **Soty Agent** — a mission-to-route builder that produces a Route Card. See [§16](#16-soty-agent-v030-design).
+- **Route Packs** — predefined bundles for students, privacy, OSINT, purple, lab, travel and BOFA work. See [§17](#17-route-packs-v030-design).
 
 ## 2. Why not just use a VPN?
 
@@ -87,15 +111,24 @@ See [docs/threat-model.md](docs/threat-model.md).
 
 ## 7. What SotyRoute does **not** do
 
+These boundaries are permanent and apply to the SOTY direction too:
+
 - It is **not** a VPN provider. No servers are shipped.
+- It is **not** Tor.
 - It does **not** guarantee anonymity.
+- It is **not** an antivirus.
+- It is **not** an EDR.
+- It is **not** a doxxing tool.
+- It does **not** automate credential-dump searches.
+- It does **not** scrape leak sites.
 - It does **not** evade law enforcement or detection.
 - It does **not** ship offensive payloads.
-- It does **not** modify the system network configuration in v0.1.0.
+- It does **not** modify the system network configuration in the current release.
 - WireGuard requires an existing server/configuration you own or are authorized to use.
 - Tor is not a VPN; SOCKS5 is not honored by every application.
 
-See [docs/legal-scope.md](docs/legal-scope.md).
+SotyRoute is for **authorized labs, owned assets, defensive research and written-scope
+engagements** only. See [docs/legal-scope.md](docs/legal-scope.md).
 
 ## 8. Quickstart
 
@@ -164,15 +197,42 @@ See [docs/sotyhub-integration.md](docs/sotyhub-integration.md).
 
 See [docs/roadmap.md](docs/roadmap.md). Summary:
 
-- **v0.1.0** — Desktop UI, observe + dry-run, evidence, exports. *(this release)*
-- **v0.2.0** — Windows Service agent, controlled firewall planning, reversible rules.
-- **v0.3.0** — WireGuard orchestration, Tor backend research, kill-switch prototype.
+- **v0.1.0** — Desktop UI, observe + dry-run, evidence, exports.
+- **v0.2.0** — Schema versioning, public-IP check, TCP probe; Windows Service agent groundwork. *(current)*
+- **v0.3.0 — SOTY direction (design)** — SOTY Score, Soty Agent (Route Card), Route Packs, Host Guard (safe checks), Ethical OSINT Navigator. Recommend-only, dry-run, evidence-first.
 - **v0.4.0** — WFP policy engine research, signed evidence bundles, BOFA preflight live.
 - **v1.0.0** — Stable agent, audited rollback, signed releases.
 
 ## 14. Legal & ethical scope
 
 SotyRoute is for **authorized** security work only: your own assets, your own lab, or systems for which you hold written authorization. See [docs/legal-scope.md](docs/legal-scope.md).
+
+## 15. SOTY Score *(v0.3.0, design)*
+
+An **explainable readiness score**. Five sub-scores — **Route, Host, Scope, Intel, Evidence** —
+roll up into an **Overall SOTY Score** and a single state: `SOTY_READY`, `SOTY_WARN`,
+`SOTY_EXPOSED`, `SOTY_DIRTY` or `SOTY_BLOCKED`. Every deduction carries a **reason** and a
+**recommended fix** — the score is never a mystery number.
+
+See [docs/soty-score.md](docs/soty-score.md). *(Design spec — deterministic engine arrives in the v0.3.0 track.)*
+
+## 16. Soty Agent *(v0.3.0, design)*
+
+A **mission-to-route builder**. Pick or type a mission — *investigate a domain*, *work from public
+WiFi*, *prepare a privacy route*, *launch BOFA* — and the agent produces a **Route Card**:
+recommended mode, required checks, tools/resources, risk warnings, scope requirements, evidence
+settings, allowed/disallowed BOFA modules and next safe actions. It **recommends only**: a local
+deterministic rule engine first (no external AI call yet), dry-run and explicit confirmation always.
+
+See [docs/soty-agent.md](docs/soty-agent.md). *(Design spec — builder arrives in the v0.3.0 track.)*
+
+## 17. Route Packs *(v0.3.0, design)*
+
+Predefined bundles that pre-set mode, checks, evidence level and BOFA mode for a class of work:
+**Student, Privacy, OSINT, Purple, Lab, Travel, Dirty Host Check** and **BOFA** routes. Packs
+compose the existing YAML profile schema — they narrow posture, they never widen scope.
+
+See [docs/route-packs.md](docs/route-packs.md). *(Design spec — catalog + loader arrive in the v0.3.0 track.)*
 
 ## License
 
