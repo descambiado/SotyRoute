@@ -92,9 +92,41 @@ The deterministic scoring engine is now implemented (PR 3, frontend-only). No UI
 
 **Tests:** 46 unit tests across `sotyScoreEngine.test.ts` and `sotyScoreState.test.ts`.
 
-The dashboard that surfaces the score and state arrives in PR 4.
+## 6. PR 4 dashboard status
 
-## 6. PR 2 schema status
+The SOTY Score dashboard is now live (PR 4, frontend-only). No real system checks run yet —
+the dashboard uses four deterministic demo presets computed from the PR 3 engine.
+
+**Route `/soty` — `src/pages/SotyDashboard.tsx`:**
+
+- **Demo preset selector** — four presets (SOTY_READY / SOTY_WARN / SOTY_EXPOSED /
+  SOTY_BLOCKED) computed by `computeSotyScore()` with crafted `SotyScoreInput` objects.
+- **Big SOTY Score hero** — circular ring coloured by state (ok/warn/danger), operator copy,
+  blocking deduction count.
+- **Sub-score grid** — five cards (Route 30%, Host 20%, Scope 25%, Intel 10%, Evidence 15%)
+  with colour-coded values and hint text.
+- **Deduction list** — every deduction with severity badge, reason, signal reference, and
+  points lost. Blocking deductions flagged with red left border and BLOCKING badge.
+- **Recommended fix list** — de-duplicated fixes extracted from deductions; shows action type,
+  confirmation requirement, and autorun safety.
+- **Route Pack quick actions** — interactive 8-pack grid preview (UI-only; loader arrives PR 6).
+- **CTA placeholders** — five action buttons (Make me SOTY-ready · Build Mission Route ·
+  Run Host Guard · Open OSINT Navigator · Launch BOFA Route) are all **disabled** with
+  `title` tooltip explaining which future PR enables each. No mutations occur.
+
+**Supporting components in `src/components/soty/`:**
+`SotyStateBadge`, `SotyScoreHero`, `SotySubscoreGrid`, `SotyDeductionList`,
+`RecommendedFixList`, `RoutePackQuickActions`.
+
+**New presenter helpers in `src/lib/sotyPresenter.ts`:**
+`sotyStateToVariant()`, `sotyStateToCopy()`, `scoreToVariant()`, `severityToVariant()`,
+`subscoreHint()`, `dedupFixes()`.
+
+**Tests:** 57 new unit tests across `sotyDemoInput.test.ts` and `sotyPresenter.test.ts`.
+
+Total vitest suite: 122 passing. No Rust changes. No external API calls. No system mutations.
+
+## 7. PR 2 schema status
 
 The following TypeScript types are now available (PR 2, frontend-only):
 
@@ -108,11 +140,16 @@ The following TypeScript types are now available (PR 2, frontend-only):
 
 Rust serde structs and the scoring engine arrive in PR 3.
 
-## 6. Roadmap position
+## 9. Roadmap position
 
-- **PR 2** — schema/types for the score report and deductions.
-- **PR 3** — deterministic scoring engine (this document's behaviour).
-- **PR 4** — dashboard surfaces the big SOTY Score and state.
+- **PR 2** — schema/types for the score report and deductions. ✓ Done
+- **PR 3** — deterministic scoring engine. ✓ Done
+- **PR 4** — dashboard surfaces the big SOTY Score and state. ✓ Done
+- **PR 5** — Mission Route builder (Soty Agent).
+- **PR 6** — Route Pack loader and activation.
+- **PR 7** — Host Guard posture scan (user-initiated; no auto-mutation).
+- **PR 8** — Ethical OSINT Navigator.
 - **PR 9** — score report folded into the Evidence Engine.
+- **PR 10** — BOFA Gate and export extension.
 
 See [docs/roadmap.md](roadmap.md).
