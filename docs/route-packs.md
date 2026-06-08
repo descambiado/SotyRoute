@@ -72,7 +72,28 @@ Each pack defines (final struct in PR 2):
 - `bofa_integration_mode` feeds the **BOFA Gate**: a pack can only ever *narrow* what BOFA may do,
   never bypass the gate. See [docs/bofa-integration.md](bofa-integration.md).
 
-## 5. Route Pack schema status (PR 2)
+## 5. Mission → Route Pack mapping (PR 5)
+
+The PR 5 Mission-to-Route Builder recommends a Route Pack for every mission type.
+This is read-only UI guidance — the actual pack loader arrives in PR 6.
+
+| Mission | Recommended Pack | Rationale |
+|---|---|---|
+| `investigate_domain` | **OSINT Route** | Passive domain/IP queries; reputation checks. |
+| `analyze_ip` | **OSINT Route** | Passive IP reputation and threat feeds. |
+| `check_hash` | **Purple Route** | Malware triage and threat intelligence. |
+| `open_osint_sources` | **OSINT Route** | Policy-approved OSINT category browsing. |
+| `connect_to_lab` | **Lab Route** | Authorized lab VPN; full evidence; BOFA gated. |
+| `launch_bofa` | **BOFA Route** | Strictest gate; scope + evidence + preflight required. |
+| `public_wifi` | **Travel Route** | Tunnel-required; public-WiFi warnings; BOFA blocked. |
+| `breach_exposure_self_check` | **Privacy Route** | Own-asset check; minimal evidence; BOFA blocked. |
+| `privacy_route` | **Privacy Route** | Leak-aware checks; no offensive modules. |
+| `defensive_workstation_check` | **Dirty Host Check** | Host posture review; BOFA blocked until host is clean. |
+
+The mapping is implemented in `apps/desktop/src/lib/sotyMissionCatalog.ts` via the
+`recommended_route_pack_id` field on each `MissionDefinition`.
+
+## 6. Route Pack schema status (PR 2)
 
 The following TypeScript types and data are now available (PR 2, frontend-only):
 
@@ -83,9 +104,10 @@ The following TypeScript types and data are now available (PR 2, frontend-only):
 
 The pack loader, UI and runtime selection arrive in PR 6.
 
-## 6. Roadmap position
+## 7. Roadmap position
 
-- **PR 2** — schema/types for Route Packs.
-- **PR 6** — pack catalog + loader (this document's behaviour).
+- **PR 2** — schema/types for Route Packs. ✓ Done
+- **PR 5** — Mission → Pack recommendations wired in the Route Builder. ✓ Done
+- **PR 6** — Pack loader, profile pre-fill, and runtime pack selection.
 
 See [docs/roadmap.md](roadmap.md).
