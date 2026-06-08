@@ -72,7 +72,18 @@ Each pack defines (final struct in PR 2):
 - `bofa_integration_mode` feeds the **BOFA Gate**: a pack can only ever *narrow* what BOFA may do,
   never bypass the gate. See [docs/bofa-integration.md](bofa-integration.md).
 
-## 5. Roadmap position
+## 5. Route Pack schema status (PR 2)
+
+The following TypeScript types and data are now available (PR 2, frontend-only):
+
+- `BofaIntegrationMode` — `"disabled" | "gated" | "enabled"`.
+- `RoutePack` — the full pack record shape.
+- `DEFAULT_ROUTE_PACKS` — all 8 packs as a readonly const array in
+  `apps/desktop/src/lib/routePackDefaults.ts`.
+
+The pack loader, UI and runtime selection arrive in PR 6.
+
+## 6. Roadmap position
 
 - **PR 2** — schema/types for Route Packs.
 - **PR 6** — pack catalog + loader (this document's behaviour).

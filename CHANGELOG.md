@@ -20,6 +20,24 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 Docs only — no code, schema, or behaviour changes.
 
+### Added (PR 2)
+- `src/types/` — frontend-only TypeScript types for the v0.3.0 SOTY direction:
+  `SotyState`, `ScoreCategory`, `ScoreSeverity`, `ActionType`, `RecommendedFix`,
+  `ScoreDeduction`, `SotyScore` (`sotyScore.ts`); `MissionType`, `RouteCard` (`routeCard.ts`);
+  `BofaIntegrationMode`, `RoutePack` (`routePack.ts`); `BofaGateDecision` (`bofaGate.ts`);
+  `EvidenceLevel`, `RiskLevel` (`risk.ts`); barrel `index.ts`.
+- `src/lib/sotyScoreDefaults.ts` — `createEmptySotyScore()` fail-closed factory,
+  `SCORE_RANGE`, `SUB_SCORE_FIELDS`.
+- `src/lib/routePackDefaults.ts` — all 8 default `RoutePack` definitions as inert readonly data.
+- `src/__tests__/sotyScore.test.ts` and `src/__tests__/routePackDefaults.test.ts` — 19 unit tests
+  covering state validity, score range (0–100), route pack uniqueness and evidence levels.
+- `vitest` devDependency; `npm test` / `npm run test:watch` scripts; vitest config in
+  `vite.config.ts`.
+- CI: `test-frontend` job; `tauri-build` depends on it.
+- Docs: PR 2 schema status sections in `soty-score.md`, `soty-agent.md`, `route-packs.md`.
+
+No runtime behaviour changed — all new code is inert types and data.
+
 ---
 
 ## [0.1.0] — 2026-05-22
