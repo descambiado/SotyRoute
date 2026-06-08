@@ -77,7 +77,24 @@ list of deductions — each pointing back at the sub-score it affected.
 - **Evidence-linked.** The full score report is written into the session evidence bundle so a
   reviewer can reconstruct why an operator was (or was not) SOTY-ready.
 
-## 5. PR 2 schema status
+## 5. PR 3 engine status
+
+The deterministic scoring engine is now implemented (PR 3, frontend-only). No UI yet — that arrives in PR 4.
+
+**Implemented in `apps/desktop/src/lib/`:**
+
+- `sotyScoreRules.ts` — `SotyScoreInput` type; five pure rule functions (`routeRules`, `hostRules`, `scopeRules`, `intelRules`, `evidenceRules`); `applyDeductions()`.
+- `sotyScoreState.ts` — `weightedOverall()` (route 30% · host 20% · scope 25% · intel 10% · evidence 15%) and `determineSotyState()`.
+- `sotyScoreEngine.ts` — `computeSotyScore(input, options?)` entry point. Pure, side-effect free, deterministic.
+
+**Deduction IDs implemented:**
+`ROUTE_NO_PUBLIC_IP`, `ROUTE_NO_DNS`, `ROUTE_DNS_MISMATCH`, `ROUTE_TUNNEL_MISSING`, `ROUTE_IPV6_LEAK`, `ROUTE_SUSPICIOUS_PROXY`, `ROUTE_NO_ROUTE_TABLE`, `ROUTE_KILL_SWITCH_UNAVAILABLE`, `ROUTE_KILL_SWITCH_DISABLED`; `HOST_OS_UNDETECTED`, `HOST_FIREWALL_DISABLED`, `HOST_DEFENDER_DISABLED`, `HOST_SUSPICIOUS_PROXY`, `HOST_SUSPICIOUS_ROUTE`, `HOST_GUARD_UNAVAILABLE`; `SCOPE_NO_PROFILE`, `SCOPE_INVALID_PROFILE`, `SCOPE_NO_TARGET`, `SCOPE_OUT_OF_SCOPE` (blocking), `SCOPE_BLOCKED_TARGET` (blocking), `SCOPE_NO_AUTHORIZATION`; `INTEL_NO_ROUTE_PACK`, `INTEL_NO_OSINT_CATEGORIES`, `INTEL_HIGH_RISK_RESOURCE`, `INTEL_BLOCKED_RESOURCE` (blocking), `INTEL_QUERY_LOGGING`; `EVIDENCE_DISABLED`, `EVIDENCE_LEVEL_OFF`, `EVIDENCE_LEVEL_MINIMAL`, `EVIDENCE_DIR_NOT_READY`, `EVIDENCE_NO_SESSION_ID`.
+
+**Tests:** 46 unit tests across `sotyScoreEngine.test.ts` and `sotyScoreState.test.ts`.
+
+The dashboard that surfaces the score and state arrives in PR 4.
+
+## 6. PR 2 schema status
 
 The following TypeScript types are now available (PR 2, frontend-only):
 
