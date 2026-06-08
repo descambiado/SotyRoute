@@ -77,7 +77,21 @@ list of deductions — each pointing back at the sub-score it affected.
 - **Evidence-linked.** The full score report is written into the session evidence bundle so a
   reviewer can reconstruct why an operator was (or was not) SOTY-ready.
 
-## 5. Roadmap position
+## 5. PR 2 schema status
+
+The following TypeScript types are now available (PR 2, frontend-only):
+
+- `SotyState` — the five state values and the `SOTY_STATES` runtime array.
+- `ScoreCategory`, `ScoreSeverity`, `ActionType` — supporting types.
+- `RecommendedFix`, `ScoreDeduction` — explainable deduction shape.
+- `SotyScore` — the full score record.
+- `createEmptySotyScore()` — fail-closed factory (state: `SOTY_BLOCKED`, all sub-scores 0).
+- `SCORE_RANGE` — `{ min: 0, max: 100 }` constant.
+- `SUB_SCORE_FIELDS` — ordered list of sub-score field names.
+
+Rust serde structs and the scoring engine arrive in PR 3.
+
+## 6. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions.
 - **PR 3** — deterministic scoring engine (this document's behaviour).

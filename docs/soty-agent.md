@@ -75,7 +75,16 @@ Mission **"work from public WiFi"** might yield:
 - **No high-risk automation.** It does not scrape, does not search credential dumps, and does not
   open policy-blocked OSINT categories. See [docs/legal-scope.md](legal-scope.md).
 
-## 5. Roadmap position
+## 5. Route Card type status (PR 2)
+
+The following TypeScript types are now available (PR 2, frontend-only):
+
+- `MissionType` — the ten mission values and the `MISSION_TYPES` runtime array.
+- `RouteCard` — the full Route Card record shape.
+
+The deterministic rule engine that produces Route Cards arrives in PR 5.
+
+## 6. Roadmap position
 
 - **PR 2** — schema/types for the Route Card.
 - **PR 5** — Mission-to-Route builder (this document's behaviour) using the local rule engine.

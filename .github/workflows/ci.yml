@@ -23,6 +23,22 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npx tsc --noEmit
 
+  test-frontend:
+    name: Frontend unit tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+
   build-rust:
     name: Build Rust backend
     runs-on: windows-latest
@@ -45,7 +61,7 @@ jobs:
   tauri-build:
     name: Tauri MSI build (Windows)
     runs-on: windows-latest
-    needs: [lint-frontend, build-rust]
+    needs: [lint-frontend, test-frontend, build-rust]
     defaults:
       run:
         working-directory: apps/desktop
