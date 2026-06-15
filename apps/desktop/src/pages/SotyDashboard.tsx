@@ -1,12 +1,16 @@
 /**
- * SotyDashboard — SOTY Score dashboard (PR 4 + PR 5).
+ * SotyDashboard — SOTY Score dashboard (PR 4 + PR 5 + PR 6).
  *
- * PR 4: Deterministic SOTY Score with four demo presets, deduction list,
+ * PR 4: Deterministic SOTY Score with demo presets, deduction list,
  *       recommended fixes, and route pack previews.
  * PR 5: Mission-to-Route Builder — local deterministic Soty Agent.
- *       "Build Mission Route" CTA now scrolls to and activates the builder.
+ * PR 6: Route Packs as interactive workflow presets.
+ *       Selecting a pack updates the demo score context, shows compatible
+ *       missions, score focus bars, and what the pack does/doesn't do.
+ *       Clicking a mission chip builds a Route Card immediately.
  *
  * Safety: UI only. No external API calls. No AI inference. No system mutations.
+ *         Pack selection updates local UI state only — no posture changes occur.
  *         "Make me SOTY-ready", "Run Host Guard", "Launch BOFA Route" and
  *         "Open OSINT Navigator" remain disabled pending their respective PRs.
  */
@@ -18,31 +22,81 @@ import {
   type DemoPresetKey,
 } from "../lib/sotyDemoInput";
 import { buildRouteCard } from "../lib/sotyRouteBuilder";
+import { getPackDemoPreset } from "../lib/sotyRoutePackScoring";
+import { ROUTE_PACK_CONTEXTS } from "../lib/sotyRoutePackContext";
+import { DEFAULT_ROUTE_PACKS } from "../lib/routePackDefaults";
 import type { MissionType, RouteCard } from "../types/routeCard";
+
 import SotyScoreHero from "../components/soty/SotyScoreHero";
 import SotySubscoreGrid from "../components/soty/SotySubscoreGrid";
 import SotyDeductionList from "../components/soty/SotyDeductionList";
 import RecommendedFixList from "../components/soty/RecommendedFixList";
-import RoutePackQuickActions from "../components/soty/RoutePackQuickActions";
+import SotyRoutePackSelector from "../components/soty/SotyRoutePackSelector";
+import SotyRoutePackDetail from "../components/soty/SotyRoutePackDetail";
 import SotyMissionBuilder from "../components/soty/SotyMissionBuilder";
 import SotyRouteCardPanel from "../components/soty/SotyRouteCardPanel";
 
 export default function SotyDashboard() {
+  // ── Demo preset (score context) ─────────────────────────────────────────
   const [preset, setPreset] = useState<DemoPresetKey>("ready");
+  /** Set when a pack auto-updates the context, cleared on manual preset change. */
+  const [contextNote, setContextNote] = useState<string | null>(null);
+
+  // ── Route pack selection ─────────────────────────────────────────────────
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
 
-  // ── Mission builder state (PR 5) ─────────────────────────────────────────
+  // ── Mission builder state ────────────────────────────────────────────────
   const [selectedMission, setSelectedMission] = useState<MissionType | null>(null);
   const [builtCard, setBuiltCard] = useState<RouteCard | null>(null);
   const missionBuilderRef = useRef<HTMLDivElement>(null);
 
+  // ── Handlers ─────────────────────────────────────────────────────────────
+
+  function handlePresetChange(key: DemoPresetKey) {
+    setPreset(key);
+    setContextNote(null); // user overrode the auto-context note
+  }
+
+  function handlePackSelect(packId: string) {
+    // Toggle off if re-clicking the same pack
+    if (packId === selectedPackId) {
+      setSelectedPackId(null);
+      setContextNote(null);
+      return;
+    }
+
+    setSelectedPackId(packId);
+
+    // Auto-update the demo score context to match the selected pack
+    const suggestedPreset = getPackDemoPreset(packId);
+    setPreset(suggestedPreset);
+
+    const pack = DEFAULT_ROUTE_PACKS.find((p) => p.id === packId);
+    if (pack) {
+      setContextNote(
+        `Score context updated to match "${pack.name}" — change the preset above to override.`
+      );
+    }
+  }
+
+  /** Called from the pack detail mission chip — selects + builds immediately. */
+  function handlePackMissionSelect(mt: MissionType) {
+    setSelectedMission(mt);
+    setBuiltCard(buildRouteCard(mt));
+    // Smooth-scroll to the Mission Builder section
+    setTimeout(() => {
+      missionBuilderRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  }
+
   function handleBuildRoute() {
     if (!selectedMission) return;
-    // Pure deterministic call — no I/O, no mutations.
     setBuiltCard(buildRouteCard(selectedMission));
   }
 
-  /** Scrolls to the mission builder and optionally pre-selects a mission. */
   function handleScrollToBuilder(defaultMission?: MissionType) {
     if (defaultMission && !selectedMission) {
       setSelectedMission(defaultMission);
@@ -50,11 +104,19 @@ export default function SotyDashboard() {
     missionBuilderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // ── Derived state ─────────────────────────────────────────────────────────
+
   const score = DEMO_PRESETS[preset];
+  const selectedPack = selectedPackId
+    ? (DEFAULT_ROUTE_PACKS.find((p) => p.id === selectedPackId) ?? null)
+    : null;
+  const selectedPackContext = selectedPackId
+    ? (ROUTE_PACK_CONTEXTS[selectedPackId] ?? null)
+    : null;
 
   return (
     <div>
-      {/* Page header */}
+      {/* ── Page header ── */}
       <div className="page-header" style={{ marginBottom: 4 }}>
         <h1 style={{ margin: 0 }}>SOTY Score</h1>
       </div>
@@ -62,22 +124,22 @@ export default function SotyDashboard() {
         Before you operate, become SOTY-ready.
       </div>
 
-      {/* Information banner */}
+      {/* ── Information banner ── */}
       <div className="banner">
-        <strong>What's here:</strong> SOTY Score from the PR&nbsp;3 deterministic engine (demo
-        presets) · Mission-to-Route Builder (PR&nbsp;5) — local deterministic planner, no
-        external AI call. Real system checks (Host Guard, PR&nbsp;7) and settings changes require
-        separate user initiation. <strong>No system checks run and no settings are changed here.</strong>
+        <strong>What's here:</strong> SOTY Score (PR&nbsp;3 engine, demo presets) · Route Packs
+        as workflow presets (PR&nbsp;6) · Mission-to-Route Builder (PR&nbsp;5). Selecting a Route
+        Pack updates the score context and suggests compatible missions.{" "}
+        <strong>No system checks run and no settings are changed here.</strong>
       </div>
 
-      {/* Demo preset selector */}
+      {/* ── Demo preset selector ── */}
       <div className="demo-selector">
         <span className="demo-selector-label">Demo preset:</span>
         {DEMO_PRESET_KEYS.map((key) => (
           <button
             key={key}
             className={`btn${preset === key ? " primary" : ""}`}
-            onClick={() => setPreset(key)}
+            onClick={() => handlePresetChange(key)}
           >
             {DEMO_PRESET_LABELS[key]}
           </button>
@@ -88,10 +150,17 @@ export default function SotyDashboard() {
         </span>
       </div>
 
+      {/* Pack-driven context note */}
+      {contextNote && (
+        <div style={{ marginBottom: 14 }}>
+          <span className="pack-context-note">{contextNote}</span>
+        </div>
+      )}
+
       {/* ── Big SOTY Score hero ── */}
       <SotyScoreHero score={score} />
 
-      {/* ── Sub-score grid (5 sub-scores) ── */}
+      {/* ── Sub-score grid ── */}
       <SotySubscoreGrid score={score} />
 
       {/* ── Deductions + recommended fixes (2-col) ── */}
@@ -100,11 +169,31 @@ export default function SotyDashboard() {
         <RecommendedFixList deductions={score.deductions} />
       </div>
 
-      {/* ── Route pack quick actions ── */}
-      <RoutePackQuickActions
-        selectedId={selectedPackId}
-        onSelect={setSelectedPackId}
-      />
+      {/* ── Route Packs section (PR 6) ── */}
+      <section style={{ marginTop: 32 }}>
+        <div className="pack-section-header">
+          <h2 className="pack-section-title">Route Packs</h2>
+          <span className="pack-section-sub">
+            Select a pack to see compatible missions, score focus and context.
+            Pack selection updates local UI only — no system changes occur.
+          </span>
+        </div>
+
+        <SotyRoutePackSelector
+          selectedId={selectedPackId}
+          onSelect={handlePackSelect}
+        />
+
+        {selectedPack && selectedPackContext && (
+          <SotyRoutePackDetail
+            pack={selectedPack}
+            context={selectedPackContext}
+            builtCard={builtCard}
+            selectedMission={selectedMission}
+            onMissionSelect={handlePackMissionSelect}
+          />
+        )}
+      </section>
 
       {/* ── Mission-to-Route Builder (PR 5) ── */}
       <hr className="section-divider" />
@@ -127,9 +216,9 @@ export default function SotyDashboard() {
       <div>
         <h2 style={{ margin: "0 0 8px", fontSize: 16 }}>Actions</h2>
         <p className="muted" style={{ marginBottom: 14 }}>
-          "Build Mission Route" scrolls to the Mission Builder above.
-          Remaining actions are planned features, disabled until their respective PRs ship.
-          No system modifications are made without explicit confirmation.
+          "Build Mission Route" scrolls to the Mission Builder above. Remaining actions are
+          planned features, disabled until their respective PRs ship. No system modifications
+          are made without explicit confirmation.
         </p>
         <div className="soty-cta-row">
           <button

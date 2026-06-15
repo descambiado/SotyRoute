@@ -19,8 +19,9 @@ Maintained by [@descambiado](https://github.com/descambiado) as part of the **So
 > - **PR 3** — Deterministic SOTY scoring engine (pure TypeScript, 29 deduction codes, 65 tests).
 > - **PR 4** — [SOTY Score dashboard](/soty) — big score ring, state badge, deduction list, recommended fixes, Route Pack preview.
 > - **PR 5** — Mission-to-Route Builder — deterministic local Soty Agent (no external AI call); all 10 mission types; full Route Card panel.
+> - **PR 6** — Route Packs as interactive workflow presets — score focus bars, compatible mission chips, pack mismatch warnings, SOTY_DIRTY demo preset. 257 tests.
 >
-> Remaining modules (**Host Guard**, **Ethical OSINT Navigator**, **BOFA Gate UI**) are design specs and arrive in PRs 6–11.
+> Remaining modules (**Host Guard**, **Ethical OSINT Navigator**, **BOFA Gate UI**) are design specs and arrive in PRs 7–11.
 > See [docs/roadmap.md](docs/roadmap.md).
 
 ---

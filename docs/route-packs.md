@@ -104,10 +104,52 @@ The following TypeScript types and data are now available (PR 2, frontend-only):
 
 The pack loader, UI and runtime selection arrive in PR 6.
 
-## 7. Roadmap position
+## 7. PR 6 interactive workflow status
+
+Route Packs are now interactive workflow presets in the SOTY Score dashboard (PR 6,
+frontend-only). The pack catalog, context data and presenter helpers are live.
+
+**What is now available:**
+
+- **`SotyRoutePackSelector`** — enhanced 8-pack grid (replaces the static PR 4 preview).
+  Each card shows the compatible mission count and BOFA integration mode.
+- **`SotyRoutePackDetail`** — rich detail panel shown when a pack is selected:
+  - **Score focus bars** — five bars (Route / Host / Scope / Intel / Evidence) showing
+    which sub-scores this pack's workflow exercises most. Levels: Low / Medium / High.
+  - **Compatible mission chips** — clickable; selecting one builds a Route Card immediately
+    via `buildRouteCard()` and scrolls to the Mission Builder panel.
+  - **What this route improves** — honest, operator-facing benefit summary.
+  - **What this route does not do** — explicit limitation copy (no unsafe wording).
+  - **Required confirmations, OSINT categories, enabled checks** — from the pack definition.
+  - **Safety warnings** — from the pack definition.
+- **Pack → SOTY Score context** — selecting a pack auto-updates the dashboard demo preset
+  to illustrate the expected SOTY state for that workflow context (e.g. Dirty Host Check →
+  SOTY_DIRTY). The operator can override at any time via the preset selector.
+- **Pack mismatch warning** — if a built Route Card recommends a different pack than the one
+  selected, a soft inline warning is shown. Informational only.
+
+**New library files:**
+
+| File | Purpose |
+|---|---|
+| `src/lib/sotyRoutePackContext.ts` | `RoutePackContext` type and `ROUTE_PACK_CONTEXTS` record — compatible missions, score focus, demo preset, what-improves/doesn't for all 8 packs |
+| `src/lib/sotyRoutePackScoring.ts` | `getPackDemoPreset()`, `getPackScoreFocus()`, `focusLevelForCategory()` — score lookups keyed by pack id |
+| `src/lib/sotyRoutePackPresenter.ts` | Focus level variants/labels/percentages, `bofaModeToLabel()`, `packMismatchWarning()` |
+
+**Safety guarantees maintained in PR 6:**
+No system mutations. No firewall/DNS/proxy/routing changes. No OSINT URLs added.
+No BOFA launch. No host scanning. Route Packs remain recommendation contexts only.
+The `what_this_route_does_not_do` copy is audited by the test suite for unsafe phrases.
+
+Total vitest suite: 257 passing. No Rust changes.
+
+## 8. Roadmap position
 
 - **PR 2** — schema/types for Route Packs. ✓ Done
 - **PR 5** — Mission → Pack recommendations wired in the Route Builder. ✓ Done
-- **PR 6** — Pack loader, profile pre-fill, and runtime pack selection.
+- **PR 6** — Pack context, score integration, interactive mission suggestions. ✓ Done
+- **PR 7** — Host Guard safe posture checks (user-initiated, no auto-mutation).
+- **PR 9** — Evidence Engine extension.
+- **PR 10** — BOFA Gate and export extension.
 
 See [docs/roadmap.md](roadmap.md).

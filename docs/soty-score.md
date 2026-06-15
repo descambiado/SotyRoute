@@ -126,6 +126,47 @@ the dashboard uses four deterministic demo presets computed from the PR 3 engine
 
 Total vitest suite: 122 passing. No Rust changes. No external API calls. No system mutations.
 
+## 8. PR 6 Route Pack context status
+
+Route Packs are now interactive workflow presets that influence the SOTY Score dashboard
+context (PR 6, frontend-only). Selecting a pack updates the demo score preset, shows
+score focus bars and compatible missions.
+
+**New demo preset: `SOTY_DIRTY`**
+
+A fifth demo preset (`dirty`) has been added to `src/lib/sotyDemoInput.ts`:
+- `firewall_enabled: false` → HOST_FIREWALL_DISABLED (−20, high)
+- `defender_enabled: false` → HOST_DEFENDER_DISABLED (−20, high)
+- `host_guard_available: false` → HOST_GUARD_UNAVAILABLE (−10, info)
+- Result: host_score = 50 → **SOTY_DIRTY** state (host < 60, no blocking deductions)
+
+All five SOTY states are now reachable from the demo preset selector.
+
+**Pack-to-score-context integration:**
+
+| Pack | Suggested demo preset | Rationale |
+|---|---|---|
+| Student, Privacy, OSINT, Purple | `warn` | Non-blocking issues typical for these workflows |
+| Lab, BOFA | `blocked` | Scope gate not yet confirmed — most restrictive start |
+| Travel | `exposed` | Untrusted network → tunnel likely absent |
+| Dirty Host Check | `dirty` | Host posture is the focus; firewall and antimalware checks expected to fail |
+
+When a pack is selected, the demo preset auto-updates to the pack's suggested context.
+The operator can override via the preset selector at any time. **No system state is changed.**
+
+**Score focus visualization:**
+
+Each pack now shows a five-bar focus visualization (Route / Host / Scope / Intel / Evidence)
+indicating which sub-scores this pack's workflow exercises most. Data lives in
+`src/lib/sotyRoutePackContext.ts`; display helpers in `src/lib/sotyRoutePackPresenter.ts`.
+
+**Safety guarantees maintained in PR 6:**
+No system mutations. No external API calls. No firewall/DNS/proxy changes.
+No OSINT URLs. No BOFA launch. No host scanning.
+Route Packs remain workflow preview contexts and recommendation surfaces only.
+
+Total vitest suite: 257 passing. No Rust changes.
+
 ## 7. PR 2 schema status
 
 The following TypeScript types are now available (PR 2, frontend-only):
@@ -145,8 +186,8 @@ Rust serde structs and the scoring engine arrive in PR 3.
 - **PR 2** — schema/types for the score report and deductions. ✓ Done
 - **PR 3** — deterministic scoring engine. ✓ Done
 - **PR 4** — dashboard surfaces the big SOTY Score and state. ✓ Done
-- **PR 5** — Mission Route builder (Soty Agent).
-- **PR 6** — Route Pack loader and activation.
+- **PR 5** — Mission Route builder (Soty Agent). ✓ Done
+- **PR 6** — Route Pack context, score integration, and mission suggestions. ✓ Done
 - **PR 7** — Host Guard posture scan (user-initiated; no auto-mutation).
 - **PR 8** — Ethical OSINT Navigator.
 - **PR 9** — score report folded into the Evidence Engine.
