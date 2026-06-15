@@ -8,6 +8,44 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 6)
+- `src/lib/sotyRoutePackContext.ts` — `RoutePackContext` type, `ScoreFocus` interface,
+  `FocusLevel` type, `ROUTE_PACK_CONTEXTS` record for all 8 packs. Each context defines:
+  compatible missions, five-category score focus (Low/Medium/High per sub-score),
+  the demo preset that best illustrates the pack's workflow context, and safe operator-facing
+  "what this route improves / does not do" copy audited by the test suite.
+- `src/lib/sotyRoutePackScoring.ts` — `getPackDemoPreset()`, `getPackScoreFocus()`,
+  `focusLevelForCategory()` — deterministic lookups keyed by pack id with safe fallbacks.
+- `src/lib/sotyRoutePackPresenter.ts` — `focusLevelToVariant()`, `focusLevelToLabel()`,
+  `focusLevelToPercent()`, `focusLevelToClass()`, `focusCategoryToLabel()`,
+  `bofaModeToLabel()`, `bofaModeToTagClass()`, `packMismatchWarning()`, `FOCUS_CATEGORIES`.
+- `src/components/soty/SotyRoutePackSelector.tsx` — enhanced 8-pack grid with compatible
+  mission count and BOFA mode tag per card.
+- `src/components/soty/SotyRoutePackDetail.tsx` — rich pack detail panel: score focus bars,
+  compatible mission chips, mismatch warning, what-improves / what-doesn't (2-col), KV
+  metadata rows, safety warnings.
+- `src/components/soty/SotyRoutePackMissionSuggestions.tsx` — chip list of compatible missions;
+  clicking a chip calls `buildRouteCard()` immediately and scrolls to the Mission Builder.
+- `src/lib/sotyDemoInput.ts` — **DIRTY preset**: firewall_enabled/defender_enabled/
+  host_guard_available all false → host_score = 50 → `SOTY_DIRTY`. `DemoPresetKey` now
+  includes `"dirty"`. All five SOTY states reachable from the demo preset selector.
+- `src/pages/SotyDashboard.tsx` — Route Pack section upgraded: new selector + detail
+  components replace the PR 4 quick-action grid. Pack selection auto-updates the demo preset
+  to the pack's suggested context; operator can override at any time.
+- `src/styles/global.css` — focus bar CSS, mission chip CSS, pack detail grid CSS,
+  `.pack-context-note` inline notification style.
+- `src/__tests__/sotyRoutePackContext.test.ts` — 37 new unit tests.
+- `src/__tests__/sotyRoutePackPresenter.test.ts` — 37 new unit tests including a
+  copy-safety audit (no unsafe phrases in PR 6 copy).
+- `docs/route-packs.md`, `docs/soty-agent.md`, `docs/soty-score.md` — PR 6 status sections.
+
+**Safety guarantees maintained in PR 6:**
+No external AI API calls. No OSINT URLs. No host scanning. No firewall/DNS/proxy/routing
+changes. No Rust or Tauri command changes. No automatic fixes. No mutations of any kind.
+Route Packs remain workflow preview contexts and recommendation surfaces only.
+
+Total vitest suite: **257 passing**. `tsc --noEmit` exit 0. No Rust changes.
+
 ### Added
 - Product docs for the **SOTY direction** (v0.3.0 design track): `docs/soty-score.md`,
   `docs/soty-agent.md`, `docs/route-packs.md` — design specs for SOTY Score, Soty Agent

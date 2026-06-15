@@ -127,15 +127,38 @@ const BLOCKED_INPUT: SotyScoreInput = {
   route_pack: { route_pack_id: null },
 };
 
+/**
+ * SOTY_DIRTY — firewall disabled + defender disabled + host guard unavailable.
+ * HOST_FIREWALL_DISABLED (-20, high) + HOST_DEFENDER_DISABLED (-20, high)
+ * + HOST_GUARD_UNAVAILABLE (-10, info)
+ * route=100 host=50 scope=100 intel=100 evidence=100 overall=90
+ * SOTY_DIRTY because host_score < 60 (no blocking deductions).
+ * Added in PR 6 alongside the Dirty Host Check route pack context.
+ */
+const DIRTY_INPUT: SotyScoreInput = {
+  route: BASE_ROUTE,
+  host: {
+    ...BASE_HOST,
+    firewall_enabled: false,      // HOST_FIREWALL_DISABLED  −20 (high)
+    defender_enabled: false,      // HOST_DEFENDER_DISABLED  −20 (high)
+    host_guard_available: false,  // HOST_GUARD_UNAVAILABLE  −10 (info)
+  },
+  scope: BASE_SCOPE,
+  intel: BASE_INTEL,
+  evidence: BASE_EVIDENCE,
+  route_pack: { route_pack_id: "dirty_host_check" },
+};
+
 // ─── Preset key type ──────────────────────────────────────────────────────────
 
-export type DemoPresetKey = "ready" | "warn" | "exposed" | "blocked";
+export type DemoPresetKey = "ready" | "warn" | "exposed" | "blocked" | "dirty";
 
 export const DEMO_PRESET_LABELS: Record<DemoPresetKey, string> = {
   ready: "SOTY_READY",
   warn: "SOTY_WARN",
   exposed: "SOTY_EXPOSED",
   blocked: "SOTY_BLOCKED",
+  dirty: "SOTY_DIRTY",
 };
 
 export const DEMO_PRESET_KEYS: readonly DemoPresetKey[] = [
@@ -143,6 +166,7 @@ export const DEMO_PRESET_KEYS: readonly DemoPresetKey[] = [
   "warn",
   "exposed",
   "blocked",
+  "dirty",
 ];
 
 // ─── Computed scores (module-level, recomputed fresh each session load) ───────
@@ -152,4 +176,5 @@ export const DEMO_PRESETS: Record<DemoPresetKey, SotyScore> = {
   warn: computeSotyScore(WARN_INPUT, { profileName: "lab-profile" }),
   exposed: computeSotyScore(EXPOSED_INPUT, { profileName: "osint-session" }),
   blocked: computeSotyScore(BLOCKED_INPUT, { profileName: "out-of-scope" }),
+  dirty: computeSotyScore(DIRTY_INPUT, { profileName: "dirty-host" }),
 };

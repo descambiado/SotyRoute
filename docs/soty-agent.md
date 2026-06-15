@@ -113,6 +113,35 @@ local rule engine.
 
 Total vitest suite: 183 passing. No Rust changes. No external API calls. No system mutations.
 
+## 5b. PR 6 Route Pack mission suggestions
+
+Route Packs now recommend compatible missions directly in the dashboard (PR 6).
+Selecting a Route Pack shows a chip list of compatible missions. Clicking a chip:
+1. Pre-selects the mission in the Mission Builder section.
+2. Calls `buildRouteCard(missionType)` immediately (pure, deterministic, no I/O).
+3. Scrolls the page to the Route Card panel.
+
+If the selected pack does not match the mission's own recommended pack, a soft
+mismatch warning appears:
+> *"This mission usually works best with 'Lab Route', but you are previewing 'OSINT Route'."*
+
+The warning is informational only — the operator can proceed with any pack.
+
+**Pack-to-mission compatibility (PR 6):**
+
+| Pack | Compatible missions |
+|---|---|
+| Student Route | Investigate Domain, Analyze IP, Check Hash, Open OSINT Sources, Breach Exposure Self-Check |
+| Privacy Route | Privacy Route, Breach Exposure Self-Check, Public WiFi |
+| OSINT Route | Investigate Domain, Analyze IP, Open OSINT Sources, Breach Exposure Self-Check |
+| Purple Route | Check Hash, Investigate Domain, Analyze IP, Connect to Lab, Defensive Workstation Check |
+| Lab Route | Connect to Lab, Launch BOFA Workflow, Investigate Domain, Analyze IP |
+| Travel Route | Public WiFi, Privacy Route, Breach Exposure Self-Check |
+| Dirty Host Check | Defensive Workstation Check, Privacy Route |
+| BOFA Route | Launch BOFA Workflow, Connect to Lab, Investigate Domain, Check Hash, Analyze IP |
+
+Total vitest suite: 257 passing. No Rust changes.
+
 ## 6. Route Card type status (PR 2)
 
 The following TypeScript types are now available (PR 2, frontend-only):
