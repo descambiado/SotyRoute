@@ -8,6 +8,37 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 7)
+- `src/types/hostGuard.ts` — `HostGuardStatus`, `HostGuardCheckId`, `HostGuardCheckPhase`,
+  `HostGuardCheck`, `HostGuardInput`, `HostGuardSummary` types.
+- `src/lib/sotyHostGuardEngine.ts` — `runHostGuard(input)` deterministic, read-only posture
+  check engine; `DEMO_HOST_GUARD_INPUTS` (one per DemoPresetKey, mirroring sotyDemoInput host
+  objects); `HOST_GUARD_LIMITATION_COPY` required disclaimer string.
+- `src/lib/sotyHostGuardMapper.ts` — `hostGuardToHostInput(summary)` maps a `HostGuardSummary`
+  back to a `SotyScoreInput["host"]`-compatible object for future live SOTY integration.
+- `src/lib/sotyHostGuardPresenter.ts` — `statusToVariant()`, `statusToLabel()`, `overallCopy()`,
+  re-exports `HOST_GUARD_LIMITATION_COPY`.
+- `src/components/soty/SotyHostGuardPanel.tsx` — read-only panel; phase-grouped check list
+  with status badges, detail text, limitation copy, and demo-mode footer.
+- `src/pages/SotyDashboard.tsx` — "Run Host Guard" CTA enabled; clicking runs the engine
+  against the active preset's demo signals and renders `SotyHostGuardPanel` below the CTAs.
+  Preset change clears the stale Host Guard result.
+- `src/styles/global.css` — `.host-guard-panel`, `.host-guard-overall`, `.host-guard-phase-group`,
+  `.host-guard-check-item`, `.host-guard-check-header`, `.host-guard-check-detail`,
+  `.host-guard-footer` styles.
+- `docs/host-guard.md` — full Host Guard doc: check catalog, status values, limitation copy,
+  Host Guard → Host Score deduction mapping, what Host Guard does NOT do, demo mode table.
+- `src/__tests__/sotyHostGuardEngine.test.ts` — 27 unit tests (overall status, check IDs,
+  summary shape, demo input correctness, fail-over-warn precedence).
+- `src/__tests__/sotyHostGuardPresenter.test.ts` — 12 unit tests including copy-safety audit
+  (banned phrases absent, "cannot guarantee" present in limitation copy).
+
+**Safety guarantees maintained in PR 7:**
+No system mutations. No external API calls. No firewall/routing/DNS/proxy changes.
+No process killing. No memory scanning. No YARA. No threat intelligence. No AV/EDR replacement.
+Host Guard is a read-only posture check surface. "Run Host Guard" requires explicit user click;
+no automatic execution occurs. Demo mode only — no real Tauri backend calls.
+
 ### Added (PR 6)
 - `src/lib/sotyRoutePackContext.ts` — `RoutePackContext` type, `ScoreFocus` interface,
   `FocusLevel` type, `ROUTE_PACK_CONTEXTS` record for all 8 packs. Each context defines:

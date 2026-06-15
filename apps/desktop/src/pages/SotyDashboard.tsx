@@ -1,5 +1,5 @@
 /**
- * SotyDashboard — SOTY Score dashboard (PR 4 + PR 5 + PR 6).
+ * SotyDashboard — SOTY Score dashboard (PR 4 + PR 5 + PR 6 + PR 7).
  *
  * PR 4: Deterministic SOTY Score with demo presets, deduction list,
  *       recommended fixes, and route pack previews.
@@ -8,11 +8,14 @@
  *       Selecting a pack updates the demo score context, shows compatible
  *       missions, score focus bars, and what the pack does/doesn't do.
  *       Clicking a mission chip builds a Route Card immediately.
+ * PR 7: Host Guard posture checks — "Run Host Guard" CTA enabled.
+ *       Runs a deterministic read-only engine against demo signals matching
+ *       the active preset. No real system checks; no mutations.
  *
  * Safety: UI only. No external API calls. No AI inference. No system mutations.
- *         Pack selection updates local UI state only — no posture changes occur.
- *         "Make me SOTY-ready", "Run Host Guard", "Launch BOFA Route" and
- *         "Open OSINT Navigator" remain disabled pending their respective PRs.
+ *         Pack selection and Host Guard run local UI state only.
+ *         "Make me SOTY-ready", "Launch BOFA Route", and "Open OSINT Navigator"
+ *         remain disabled pending their respective PRs.
  */
 import { useState, useRef } from "react";
 import {
@@ -27,6 +30,9 @@ import { ROUTE_PACK_CONTEXTS } from "../lib/sotyRoutePackContext";
 import { DEFAULT_ROUTE_PACKS } from "../lib/routePackDefaults";
 import type { MissionType, RouteCard } from "../types/routeCard";
 
+import { runHostGuard, DEMO_HOST_GUARD_INPUTS } from "../lib/sotyHostGuardEngine";
+import type { HostGuardSummary } from "../types/hostGuard";
+
 import SotyScoreHero from "../components/soty/SotyScoreHero";
 import SotySubscoreGrid from "../components/soty/SotySubscoreGrid";
 import SotyDeductionList from "../components/soty/SotyDeductionList";
@@ -35,6 +41,7 @@ import SotyRoutePackSelector from "../components/soty/SotyRoutePackSelector";
 import SotyRoutePackDetail from "../components/soty/SotyRoutePackDetail";
 import SotyMissionBuilder from "../components/soty/SotyMissionBuilder";
 import SotyRouteCardPanel from "../components/soty/SotyRouteCardPanel";
+import SotyHostGuardPanel from "../components/soty/SotyHostGuardPanel";
 
 export default function SotyDashboard() {
   // ── Demo preset (score context) ─────────────────────────────────────────
@@ -45,6 +52,10 @@ export default function SotyDashboard() {
   // ── Route pack selection ─────────────────────────────────────────────────
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
 
+  // ── Host Guard state ─────────────────────────────────────────────────────
+  const [hostGuardSummary, setHostGuardSummary] = useState<HostGuardSummary | null>(null);
+  const hostGuardRef = useRef<HTMLDivElement>(null);
+
   // ── Mission builder state ────────────────────────────────────────────────
   const [selectedMission, setSelectedMission] = useState<MissionType | null>(null);
   const [builtCard, setBuiltCard] = useState<RouteCard | null>(null);
@@ -54,7 +65,16 @@ export default function SotyDashboard() {
 
   function handlePresetChange(key: DemoPresetKey) {
     setPreset(key);
-    setContextNote(null); // user overrode the auto-context note
+    setContextNote(null);
+    setHostGuardSummary(null); // clear stale Host Guard result on preset change
+  }
+
+  function handleRunHostGuard() {
+    const summary = runHostGuard(DEMO_HOST_GUARD_INPUTS[preset]);
+    setHostGuardSummary(summary);
+    setTimeout(() => {
+      hostGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   function handlePackSelect(packId: string) {
@@ -127,9 +147,10 @@ export default function SotyDashboard() {
       {/* ── Information banner ── */}
       <div className="banner">
         <strong>What's here:</strong> SOTY Score (PR&nbsp;3 engine, demo presets) · Route Packs
-        as workflow presets (PR&nbsp;6) · Mission-to-Route Builder (PR&nbsp;5). Selecting a Route
-        Pack updates the score context and suggests compatible missions.{" "}
-        <strong>No system checks run and no settings are changed here.</strong>
+        as workflow presets (PR&nbsp;6) · Mission-to-Route Builder (PR&nbsp;5) · Host Guard
+        posture checks (PR&nbsp;7, demo mode). Selecting a Route Pack updates the score context
+        and suggests compatible missions.{" "}
+        <strong>No real system checks run and no settings are changed here.</strong>
       </div>
 
       {/* ── Demo preset selector ── */}
@@ -237,8 +258,8 @@ export default function SotyDashboard() {
           </button>
           <button
             className="btn"
-            disabled
-            title="Host Guard posture scan — planned for PR 7. Requires explicit user initiation."
+            onClick={handleRunHostGuard}
+            title="Run Host Guard demo posture check against the active preset signals. No real system checks performed."
           >
             Run Host Guard
           </button>
@@ -263,6 +284,15 @@ export default function SotyDashboard() {
           owned assets, and written-scope engagements only.
         </p>
       </div>
+
+      {/* ── Host Guard panel (PR 7) ── */}
+      {hostGuardSummary && (
+        <div ref={hostGuardRef} style={{ marginTop: 24 }}>
+          <hr className="section-divider" />
+          <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>Host Guard</h2>
+          <SotyHostGuardPanel summary={hostGuardSummary} />
+        </div>
+      )}
     </div>
   );
 }
