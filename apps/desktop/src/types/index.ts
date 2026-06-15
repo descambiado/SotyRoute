@@ -18,3 +18,12 @@ export { MISSION_TYPES } from "./routeCard";
 export type { BofaIntegrationMode, RoutePack } from "./routePack";
 
 export type { BofaGateDecision } from "./bofaGate";
+
+export type {
+  HostGuardStatus,
+  HostGuardCheckId,
+  HostGuardCheckPhase,
+  HostGuardCheck,
+  HostGuardInput,
+  HostGuardSummary,
+} from "./hostGuard";

@@ -181,6 +181,41 @@ The following TypeScript types are now available (PR 2, frontend-only):
 
 Rust serde structs and the scoring engine arrive in PR 3.
 
+## 9. PR 7 Host Guard status
+
+Host Guard posture checks are now implemented (PR 7, demo mode). The "Run Host Guard" CTA on
+the dashboard is enabled. Clicking it runs the deterministic engine against demo signals
+matching the active preset — no real system calls are made.
+
+**New in PR 7:**
+
+- `src/types/hostGuard.ts` — `HostGuardStatus`, `HostGuardCheckId`, `HostGuardCheckPhase`,
+  `HostGuardCheck`, `HostGuardInput`, `HostGuardSummary`.
+- `src/lib/sotyHostGuardEngine.ts` — `runHostGuard(input)` pure function; `DEMO_HOST_GUARD_INPUTS`
+  (one per DemoPresetKey); `HOST_GUARD_LIMITATION_COPY`.
+- `src/lib/sotyHostGuardMapper.ts` — `hostGuardToHostInput(summary)` maps Host Guard results
+  back to a `SotyScoreInput["host"]`-compatible shape.
+- `src/lib/sotyHostGuardPresenter.ts` — `statusToVariant()`, `statusToLabel()`, `overallCopy()`.
+- `src/components/soty/SotyHostGuardPanel.tsx` — phase-grouped check display.
+- `src/pages/SotyDashboard.tsx` — "Run Host Guard" enabled; panel rendered below CTAs.
+- `docs/host-guard.md` — full Host Guard doc with check table, limitation copy, and Host-Score mapping.
+
+**Host Guard → Host Score mapping:**
+
+| Host Guard check | SOTY deduction when failing |
+|---|---|
+| `HG_FIREWALL` | `HOST_FIREWALL_DISABLED` (−20 pts, high) |
+| `HG_DEFENDER` | `HOST_DEFENDER_DISABLED` (−15 pts, medium) |
+| `HG_SUSPICIOUS_PROXY` | `HOST_SUSPICIOUS_PROXY` (−20 pts, high) |
+| `HG_SUSPICIOUS_ROUTE` | `HOST_SUSPICIOUS_ROUTE` (−20 pts, high) |
+
+See [docs/host-guard.md](host-guard.md) for the full check catalog and limitation copy.
+
+**Safety guarantees maintained in PR 7:**
+No system mutations. No external API calls. No firewall/routing/DNS/proxy changes.
+No process killing. No memory scanning. No AV/EDR replacement claims.
+Host Guard is a read-only posture check surface — it cannot guarantee the host is clean.
+
 ## 9. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions. ✓ Done
