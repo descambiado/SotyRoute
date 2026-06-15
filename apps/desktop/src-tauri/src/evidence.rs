@@ -187,7 +187,7 @@ pub fn write_session(
     dry_run: bool,
 ) -> anyhow::Result<WriteResult> {
     let session_id = new_session_id(mode);
-    let dir = evidence_root().join(&folder_name(&session_id, mode));
+    let dir = evidence_root().join(folder_name(&session_id, mode));
     assert_within_evidence_root(&dir)?;
     std::fs::create_dir_all(&dir)?;
 
@@ -311,7 +311,7 @@ fn render_markdown(
             profile.blocked_targets.join(", ")
         }
     ));
-    s.push_str("\n");
+    s.push('\n');
 
     s.push_str("## Host\n\n");
     s.push_str(&format!(
@@ -342,14 +342,14 @@ fn render_markdown(
             step.executes_in_v0_1_0
         ));
     }
-    s.push_str("\n");
+    s.push('\n');
 
     if !plan.warnings.is_empty() {
         s.push_str("## Warnings\n\n");
         for w in &plan.warnings {
             s.push_str(&format!("- `{}` ({}): {}\n", w.code, w.severity, w.message));
         }
-        s.push_str("\n");
+        s.push('\n');
     }
 
     s.push_str("## Notes\n\nThis report is part of the SotyRoute evidence bundle for the authorized lab the operator declared in the profile. SotyRoute does not validate that authorization; the operator carries that responsibility.\n");

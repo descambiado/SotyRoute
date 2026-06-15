@@ -108,37 +108,34 @@ fn os_info() -> (String, String) {
 
 fn list_interfaces() -> Vec<NetworkInterface> {
     let mut out: Vec<NetworkInterface> = Vec::new();
-    match if_addrs::get_if_addrs() {
-        Ok(list) => {
-            // Group by interface name; if_addrs returns one entry per address.
-            use std::collections::BTreeMap;
-            let mut by_name: BTreeMap<String, NetworkInterface> = BTreeMap::new();
-            for entry in list {
-                let name = entry.name.clone();
-                let addr = entry.addr.ip().to_string();
-                let is_loopback = entry.is_loopback();
-                by_name
-                    .entry(name.clone())
-                    .and_modify(|nif| {
-                        if !nif.addresses.contains(&addr) {
-                            nif.addresses.push(addr.clone());
-                        }
-                    })
-                    .or_insert_with(|| NetworkInterface {
-                        name: name.clone(),
-                        description: if is_loopback {
-                            "Loopback".into()
-                        } else {
-                            String::new()
-                        },
-                        addresses: vec![addr],
-                        // if_addrs only reports interfaces that have an address, so they are "up".
-                        is_up: true,
-                    });
-            }
-            out = by_name.into_values().collect();
+    if let Ok(list) = if_addrs::get_if_addrs() {
+        // Group by interface name; if_addrs returns one entry per address.
+        use std::collections::BTreeMap;
+        let mut by_name: BTreeMap<String, NetworkInterface> = BTreeMap::new();
+        for entry in list {
+            let name = entry.name.clone();
+            let addr = entry.addr.ip().to_string();
+            let is_loopback = entry.is_loopback();
+            by_name
+                .entry(name.clone())
+                .and_modify(|nif| {
+                    if !nif.addresses.contains(&addr) {
+                        nif.addresses.push(addr.clone());
+                    }
+                })
+                .or_insert_with(|| NetworkInterface {
+                    name: name.clone(),
+                    description: if is_loopback {
+                        "Loopback".into()
+                    } else {
+                        String::new()
+                    },
+                    addresses: vec![addr],
+                    // if_addrs only reports interfaces that have an address, so they are "up".
+                    is_up: true,
+                });
         }
-        Err(_) => {}
+        out = by_name.into_values().collect();
     }
     out
 }
