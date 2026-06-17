@@ -539,7 +539,10 @@ fn validate_soty_dir_name(name: &str) -> anyhow::Result<()> {
     if name.contains("..") {
         anyhow::bail!("soty run dir name must not contain parent-dir components");
     }
-    if !name.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') {
+    if !name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
         anyhow::bail!(
             "soty run dir name must contain only alphanumeric characters, hyphens, and underscores"
         );
