@@ -1,6 +1,5 @@
 use crate::evidence::{
-    self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult,
-    SotyExportSaveResult,
+    self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult, SotyExportSaveResult,
 };
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
