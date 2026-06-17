@@ -18,10 +18,16 @@
  * PR 9: Evidence snapshot — "Generate Evidence" CTA enabled.
  *       Assembles a local SotyEvidenceSnapshot from current dashboard state.
  *       Copy JSON / Copy Markdown preview. No filesystem writes; no external calls.
+ * PR 11: BOFA Gate + SotyHUB Export — "Open BOFA Gate" CTA enabled.
+ *        Deterministic gate decision from current score + route pack.
+ *        Prepare BOFA and SotyHUB export payloads locally.
+ *        "Save exports locally" writes bofa_export.json + sotyhub_export.json
+ *        to ~/.sotyroute/runs/<timestamp>_soty/ via Tauri. No BOFA launch.
+ *        No SotyHUB upload. No external calls.
  *
  * Safety: UI only. No external API calls. No AI inference. No system mutations.
- *         Pack selection, Host Guard, OSINT Navigator, and Evidence all run local UI state.
- *         "Make me SOTY-ready" and "Launch BOFA Route" remain disabled.
+ *         Pack selection, Host Guard, OSINT Navigator, Evidence, and BOFA Gate
+ *         all run local UI state. "Make me SOTY-ready" remains disabled.
  */
 import { useState, useRef } from "react";
 import {
@@ -42,6 +48,10 @@ import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
 import { buildEvidenceSnapshot } from "../lib/sotyEvidenceBuilder";
 import type { SotyEvidenceSnapshot } from "../types/sotyEvidence";
 import SotyEvidencePanel from "../components/soty/SotyEvidencePanel";
+import SotyBofaGatePanel from "../components/soty/SotyBofaGatePanel";
+import SotyExportPanel from "../components/soty/SotyExportPanel";
+import { buildBofaGateDecision } from "../lib/sotyBofaGate";
+import type { BofaGateDecision } from "../types/bofaGate";
 
 import SotyScoreHero from "../components/soty/SotyScoreHero";
 import SotySubscoreGrid from "../components/soty/SotySubscoreGrid";
@@ -74,6 +84,11 @@ export default function SotyDashboard() {
   const [evidenceSnapshot, setEvidenceSnapshot] = useState<SotyEvidenceSnapshot | null>(null);
   const evidenceRef = useRef<HTMLDivElement>(null);
 
+  // ── BOFA Gate state (PR 11) ──────────────────────────────────────────────
+  const [bofaGate, setBofaGate] = useState<BofaGateDecision | null>(null);
+  const [bofaGateOpen, setBofaGateOpen] = useState(false);
+  const bofaGateRef = useRef<HTMLDivElement>(null);
+
   // ── Mission builder state ────────────────────────────────────────────────
   const [selectedMission, setSelectedMission] = useState<MissionType | null>(null);
   const [builtCard, setBuiltCard] = useState<RouteCard | null>(null);
@@ -84,8 +99,10 @@ export default function SotyDashboard() {
   function handlePresetChange(key: DemoPresetKey) {
     setPreset(key);
     setContextNote(null);
-    setHostGuardSummary(null); // clear stale Host Guard result on preset change
-    setEvidenceSnapshot(null); // clear stale evidence on preset change
+    setHostGuardSummary(null);
+    setEvidenceSnapshot(null);
+    setBofaGate(null);
+    setBofaGateOpen(false);
   }
 
   function handleRunHostGuard() {
@@ -113,11 +130,22 @@ export default function SotyDashboard() {
     }, 50);
   }
 
+  function handleOpenBofaGate() {
+    const gate = buildBofaGateDecision(score, selectedPack, evidenceSnapshot?.id ?? null);
+    setBofaGate(gate);
+    setBofaGateOpen(true);
+    setTimeout(() => {
+      bofaGateRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+
   function handlePackSelect(packId: string) {
     // Toggle off if re-clicking the same pack
     if (packId === selectedPackId) {
       setSelectedPackId(null);
       setContextNote(null);
+      setBofaGate(null);
+      setBofaGateOpen(false);
       return;
     }
 
@@ -273,9 +301,9 @@ export default function SotyDashboard() {
       <div>
         <h2 style={{ margin: "0 0 8px", fontSize: 16 }}>Actions</h2>
         <p className="muted" style={{ marginBottom: 14 }}>
-          "Build Mission Route" scrolls to the Mission Builder above. Remaining actions are
-          planned features, disabled until their respective PRs ship. No system modifications
-          are made without explicit confirmation.
+          "Build Mission Route" scrolls to the Mission Builder above.
+          "Open BOFA Gate" runs the local gate engine against the current score and pack.
+          No system modifications are made without explicit confirmation.
         </p>
         <div className="soty-cta-row">
           <button
@@ -315,10 +343,10 @@ export default function SotyDashboard() {
           </button>
           <button
             className="btn"
-            disabled
-            title="BOFA Route export — planned for PR 10. Requires BOFA Gate pre-flight."
+            onClick={handleOpenBofaGate}
+            title="Compute the local BOFA Gate decision for the current score and route pack. Does not launch BOFA. No external calls."
           >
-            Launch BOFA Route
+            Open BOFA Gate
           </button>
         </div>
         <p className="muted" style={{ marginTop: 8 }}>
@@ -352,6 +380,34 @@ export default function SotyDashboard() {
             </button>
           </div>
           <SotyEvidencePanel snapshot={evidenceSnapshot} />
+        </div>
+      )}
+
+      {/* ── BOFA Gate + Export panel (PR 11) ── */}
+      {bofaGateOpen && bofaGate && (
+        <div ref={bofaGateRef} style={{ marginTop: 24 }}>
+          <hr className="section-divider" />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              marginBottom: 12,
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: 16 }}>BOFA Gate</h2>
+            <button
+              className="btn"
+              style={{ fontSize: 11.5, padding: "4px 10px" }}
+              onClick={() => setBofaGateOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+          <SotyBofaGatePanel gate={bofaGate} />
+          <div style={{ marginTop: 16 }}>
+            <SotyExportPanel gate={bofaGate} snapshot={evidenceSnapshot} />
+          </div>
         </div>
       )}
 

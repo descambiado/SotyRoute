@@ -527,6 +527,15 @@ pub struct SotyEvidenceSaveResult {
     pub generated_at: String,
 }
 
+/// Result returned to the frontend after BOFA + SotyHUB exports are saved.
+#[derive(Debug, Clone, Serialize)]
+pub struct SotyExportSaveResult {
+    pub directory: String,
+    pub bofa_filename: String,
+    pub sotyhub_filename: String,
+    pub generated_at: String,
+}
+
 /// Validate that an internally-generated run directory name contains no path
 /// separators, parent-dir components, or characters outside [A-Za-z0-9\-_].
 fn validate_soty_dir_name(name: &str) -> anyhow::Result<()> {
@@ -576,6 +585,33 @@ pub fn write_soty_evidence(
         directory: dir.to_string_lossy().into_owned(),
         json_filename: "soty_evidence.json".into(),
         md_filename: "soty_evidence.md".into(),
+        generated_at: now.to_rfc3339(),
+    })
+}
+
+/// Write `bofa_export.json` and `sotyhub_export.json` into a new run directory
+/// under the evidence root.  Directory name generated internally from UTC timestamp;
+/// no user-controlled path components are accepted.
+pub fn write_soty_exports(
+    bofa_json: &str,
+    sotyhub_json: &str,
+) -> anyhow::Result<SotyExportSaveResult> {
+    let now = Utc::now();
+    let dir_name = format!("{}_soty", now.format("%Y%m%d-%H%M%S"));
+
+    validate_soty_dir_name(&dir_name)?;
+
+    let dir = evidence_root().join(&dir_name);
+    assert_within_evidence_root(&dir)?;
+    std::fs::create_dir_all(&dir)?;
+
+    std::fs::write(dir.join("bofa_export.json"), bofa_json)?;
+    std::fs::write(dir.join("sotyhub_export.json"), sotyhub_json)?;
+
+    Ok(SotyExportSaveResult {
+        directory: dir.to_string_lossy().into_owned(),
+        bofa_filename: "bofa_export.json".into(),
+        sotyhub_filename: "sotyhub_export.json".into(),
         generated_at: now.to_rfc3339(),
     })
 }
