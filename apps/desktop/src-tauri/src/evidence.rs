@@ -518,6 +518,65 @@ struct BofaExport<'a> {
     produced_at: String,
 }
 
+/// Result returned to the frontend after a SOTY evidence snapshot is persisted.
+#[derive(Debug, Clone, Serialize)]
+pub struct SotyEvidenceSaveResult {
+    pub directory: String,
+    pub json_filename: String,
+    pub md_filename: String,
+    pub generated_at: String,
+}
+
+/// Validate that an internally-generated run directory name contains no path
+/// separators, parent-dir components, or characters outside [A-Za-z0-9\-_].
+fn validate_soty_dir_name(name: &str) -> anyhow::Result<()> {
+    if name.is_empty() {
+        anyhow::bail!("soty run dir name must not be empty");
+    }
+    if name.contains('/') || name.contains('\\') {
+        anyhow::bail!("soty run dir name must not contain path separators");
+    }
+    if name.contains("..") {
+        anyhow::bail!("soty run dir name must not contain parent-dir components");
+    }
+    if !name.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') {
+        anyhow::bail!(
+            "soty run dir name must contain only alphanumeric characters, hyphens, and underscores"
+        );
+    }
+    Ok(())
+}
+
+/// Write `soty_evidence.json` and `soty_evidence.md` into a new run directory
+/// under the evidence root.  The directory name is generated internally from
+/// the current UTC timestamp (`YYYYMMDD-HHMMSS_soty`); no user-controlled
+/// path components are accepted.
+///
+/// The caller is responsible for pre-rendering and pre-redacting both strings.
+pub fn write_soty_evidence(
+    json_content: &str,
+    md_content: &str,
+) -> anyhow::Result<SotyEvidenceSaveResult> {
+    let now = Utc::now();
+    let dir_name = format!("{}_soty", now.format("%Y%m%d-%H%M%S"));
+
+    validate_soty_dir_name(&dir_name)?;
+
+    let dir = evidence_root().join(&dir_name);
+    assert_within_evidence_root(&dir)?;
+    std::fs::create_dir_all(&dir)?;
+
+    std::fs::write(dir.join("soty_evidence.json"), json_content)?;
+    std::fs::write(dir.join("soty_evidence.md"), md_content)?;
+
+    Ok(SotyEvidenceSaveResult {
+        directory: dir.to_string_lossy().into_owned(),
+        json_filename: "soty_evidence.json".into(),
+        md_filename: "soty_evidence.md".into(),
+        generated_at: now.to_rfc3339(),
+    })
+}
+
 pub fn write_bofa(
     dir: &Path,
     summary: &SessionSummary,
@@ -586,4 +645,53 @@ pub fn write_sotyhub(
     };
     std::fs::write(&path, serde_json::to_string_pretty(&payload)?)?;
     Ok(path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── validate_soty_dir_name ─────────────────────────────────────────────────
+
+    #[test]
+    fn rejects_empty_name() {
+        assert!(validate_soty_dir_name("").is_err());
+    }
+
+    #[test]
+    fn rejects_forward_slash() {
+        assert!(validate_soty_dir_name("foo/bar").is_err());
+    }
+
+    #[test]
+    fn rejects_backslash() {
+        assert!(validate_soty_dir_name("foo\\bar").is_err());
+    }
+
+    #[test]
+    fn rejects_parent_dir_dotdot() {
+        assert!(validate_soty_dir_name("..").is_err());
+        assert!(validate_soty_dir_name("foo..bar").is_err());
+    }
+
+    #[test]
+    fn rejects_space() {
+        assert!(validate_soty_dir_name("foo bar").is_err());
+    }
+
+    #[test]
+    fn rejects_special_chars() {
+        assert!(validate_soty_dir_name("foo!bar").is_err());
+        assert!(validate_soty_dir_name("foo@bar").is_err());
+        assert!(validate_soty_dir_name("foo:bar").is_err());
+        assert!(validate_soty_dir_name("foo*bar").is_err());
+        assert!(validate_soty_dir_name("foo?bar").is_err());
+    }
+
+    #[test]
+    fn accepts_valid_soty_dir_name() {
+        assert!(validate_soty_dir_name("20260617-120000_soty").is_ok());
+        assert!(validate_soty_dir_name("20241215-143021_soty").is_ok());
+        assert!(validate_soty_dir_name("19991231-235959_soty").is_ok());
+    }
 }

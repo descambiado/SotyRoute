@@ -8,6 +8,27 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 10)
+- `src-tauri/src/evidence.rs` — `write_soty_evidence()` persists `soty_evidence.json` and
+  `soty_evidence.md` to a new timestamped run directory under `~/.sotyroute/runs/<timestamp>_soty/`.
+  `validate_soty_dir_name()` rejects path separators, parent-dir components, and non-alphanumeric
+  characters. `assert_within_evidence_root()` re-validated before every write (defense in depth).
+  Returns `SotyEvidenceSaveResult` with directory path and fixed filenames.
+- `src-tauri/src/commands.rs` — `save_soty_evidence` Tauri command: accepts pre-rendered
+  `json_content` and `md_content` strings; no user-controlled path accepted.
+- `src/lib/sotyEvidencePersistence.ts` — `saveEvidenceSnapshot()` TypeScript wrapper: calls
+  `renderEvidenceJson()` + `renderEvidenceMarkdown()` on the snapshot before invoking the Tauri
+  command. Returns `SaveEvidenceOutcome` with status, result, and error.
+- `src/components/soty/SotyEvidencePanel.tsx` — "Save to evidence directory" button enabled with
+  saving/saved/error states. Success banner shows the local directory path. No external data sent.
+- `src/lib/sotyEvidenceRedaction.ts` — `SAFE_FIELD_EXCEPTIONS` now exported (needed by the new
+  test suite).
+- Tests: `sotyEvidencePersistence.test.ts` — Tauri invoke payload shape, JSON safety (no unsafe
+  keys, all-false redaction section), Markdown safety copy, success and error paths.
+- `src-tauri/src/evidence.rs` — `#[cfg(test)]` module: 9 tests for `validate_soty_dir_name`
+  covering empty input, path separators, parent-dir components, special characters, and valid names.
+- `docs/evidence-model.md` — updated to reflect PR 10 filesystem persistence now live.
+
 ### Added (PR 9)
 - `src/types/sotyEvidence.ts` — `SotyEvidenceSnapshot` and all sub-summary types:
   `SotyEvidenceScoreSummary`, `SotyEvidenceRoutePackSummary`, `SotyEvidenceRouteCardSummary`,
