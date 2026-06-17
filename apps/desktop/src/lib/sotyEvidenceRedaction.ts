@@ -29,7 +29,7 @@ export const UNSAFE_FIELD_PATTERNS: readonly RegExp[] = [
  * Whitelisting them prevents deepStripUnsafeFields from erasing the guarantee
  * fields themselves from the JSON output.
  */
-const SAFE_FIELD_EXCEPTIONS = new Set([
+export const SAFE_FIELD_EXCEPTIONS = new Set([
   "query_content_logged",
   "external_page_content_logged",
   "credentials_logged",

@@ -1,4 +1,4 @@
-use crate::evidence::{self, AppSettings, SessionDetail, SessionSummary};
+use crate::evidence::{self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult};
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
 use crate::system::{self, DoctorReport};
@@ -306,4 +306,12 @@ pub fn probe_tcp(host: String, port: u16) -> CmdResult<TcpProbeResult> {
 pub fn set_settings(settings: AppSettings) -> CmdResult<AppSettings> {
     evidence::save_settings(&settings).map_err(err)?;
     Ok(settings)
+}
+
+#[tauri::command]
+pub fn save_soty_evidence(
+    json_content: String,
+    md_content: String,
+) -> CmdResult<SotyEvidenceSaveResult> {
+    evidence::write_soty_evidence(&json_content, &md_content).map_err(err)
 }

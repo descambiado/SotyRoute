@@ -1,20 +1,29 @@
 /**
- * SotyEvidencePanel — PR 9.
+ * SotyEvidencePanel — PR 10.
  *
  * Displays a local evidence snapshot generated from the current SOTY Dashboard
- * state. Provides copy-to-clipboard actions for JSON and Markdown previews.
- * Filesystem persistence is planned for a later PR.
+ * state. Provides copy-to-clipboard actions for JSON and Markdown previews,
+ * and persists the snapshot to the local evidence directory via Tauri.
  *
- * Safety: no external API calls, no system mutations, no filesystem writes.
- * Clipboard write is the only side-effect; it does not send data anywhere.
+ * Safety: no external API calls. Filesystem writes go only to
+ * ~/.sotyroute/runs/<timestamp>_soty/ via the Tauri save_soty_evidence command.
  */
 import { useState } from "react";
 import type { SotyEvidenceSnapshot } from "../../types/sotyEvidence";
 import { renderEvidenceJson } from "../../lib/sotyEvidenceJson";
 import { renderEvidenceMarkdown } from "../../lib/sotyEvidenceMarkdown";
+import {
+  saveEvidenceSnapshot,
+  type SotyEvidenceSaveResult,
+} from "../../lib/sotyEvidencePersistence";
 
 type CopyTarget = "json" | "md";
 type CopyState = { target: CopyTarget; status: "copied" } | null;
+type SaveState =
+  | { status: "idle" }
+  | { status: "saving" }
+  | { status: "saved"; result: SotyEvidenceSaveResult }
+  | { status: "error"; error: string };
 
 interface Props {
   snapshot: SotyEvidenceSnapshot;
@@ -22,17 +31,30 @@ interface Props {
 
 export default function SotyEvidencePanel({ snapshot }: Props) {
   const [copyState, setCopyState] = useState<CopyState>(null);
+  const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
 
   async function handleCopy(target: CopyTarget) {
-    const text = target === "json"
-      ? renderEvidenceJson(snapshot)
-      : renderEvidenceMarkdown(snapshot);
+    const text =
+      target === "json"
+        ? renderEvidenceJson(snapshot)
+        : renderEvidenceMarkdown(snapshot);
     await navigator.clipboard.writeText(text);
     setCopyState({ target, status: "copied" });
     setTimeout(() => setCopyState(null), 2000);
   }
 
+  async function handleSave() {
+    setSaveState({ status: "saving" });
+    const outcome = await saveEvidenceSnapshot(snapshot);
+    if (outcome.status === "saved" && outcome.result) {
+      setSaveState({ status: "saved", result: outcome.result });
+    } else {
+      setSaveState({ status: "error", error: outcome.error ?? "Unknown error" });
+    }
+  }
+
   const s = snapshot.soty_score;
+  const isSaving = saveState.status === "saving";
 
   return (
     <div className="evidence-panel">
@@ -49,7 +71,6 @@ export default function SotyEvidencePanel({ snapshot }: Props) {
 
       <div className="evidence-limitation-banner">
         This is a local SOTY evidence preview. No data has been sent externally.
-        Filesystem persistence is planned for a later PR.
       </div>
 
       {/* Score summary */}
@@ -175,36 +196,51 @@ export default function SotyEvidencePanel({ snapshot }: Props) {
 
       {/* Copy / export actions */}
       <div className="evidence-action-bar">
-        <button
-          className="btn"
-          onClick={() => handleCopy("json")}
-        >
+        <button className="btn" onClick={() => handleCopy("json")}>
           {copyState?.target === "json" && copyState.status === "copied"
             ? "Copied JSON"
             : "Copy JSON preview"}
         </button>
-        <button
-          className="btn"
-          onClick={() => handleCopy("md")}
-        >
+        <button className="btn" onClick={() => handleCopy("md")}>
           {copyState?.target === "md" && copyState.status === "copied"
             ? "Copied Markdown"
             : "Copy Markdown preview"}
         </button>
         <button
           className="btn"
-          disabled
-          title="Save to local evidence directory — planned for a later PR. No filesystem writes in PR 9."
+          disabled={isSaving || saveState.status === "saved"}
+          onClick={handleSave}
         >
-          Save to evidence directory
+          {isSaving
+            ? "Saving…"
+            : saveState.status === "saved"
+              ? "Saved"
+              : "Save to evidence directory"}
         </button>
       </div>
 
+      {saveState.status === "saved" && (
+        <div className="evidence-save-success">
+          Saved to{" "}
+          <span className="mono">{saveState.result.directory}</span>
+          <span className="muted">
+            {" "}({saveState.result.json_filename}, {saveState.result.md_filename})
+          </span>
+        </div>
+      )}
+
+      {saveState.status === "error" && (
+        <div className="evidence-save-error">
+          Save failed: {saveState.error}
+        </div>
+      )}
+
       <div className="muted" style={{ fontSize: 11, marginTop: 8 }}>
         Copy actions write to your local clipboard only — no data is sent externally.
-        "Save to evidence directory" will write{" "}
+        "Save to evidence directory" writes{" "}
         <span className="mono">soty_evidence.json</span> and{" "}
-        <span className="mono">soty_evidence.md</span> locally when enabled.
+        <span className="mono">soty_evidence.md</span> to{" "}
+        <span className="mono">~/.sotyroute/runs/&lt;timestamp&gt;_soty/</span>.
       </div>
     </div>
   );

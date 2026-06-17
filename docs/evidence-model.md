@@ -1,6 +1,6 @@
 # SOTY Evidence Model
 
-**Status: implemented — PR 9 (frontend-only, memory-only; filesystem persistence planned).**
+**Status: implemented — PR 10 (filesystem persistence live; PR 9 frontend snapshot + renderers).**
 
 The SOTY Evidence Model describes what a SOTY Dashboard session captures as local evidence.
 It is the basis for `soty_evidence.json` and `soty_evidence.md` outputs that will be written
@@ -90,21 +90,22 @@ interface SotyEvidenceSnapshot {
 
 ---
 
-## Outputs (PR 9)
+## Outputs
 
 | Output | Status | Description |
 |---|---|---|
-| In-memory snapshot | ✅ | `SotyEvidenceSnapshot` object in React state |
-| JSON preview | ✅ | `renderEvidenceJson()` — copy to clipboard |
-| Markdown preview | ✅ | `renderEvidenceMarkdown()` — copy to clipboard |
-| `soty_evidence.json` file | planned | Local filesystem write, future PR |
-| `soty_evidence.md` file | planned | Local filesystem write, future PR |
-| Evidence directory integration | planned | Adds SOTY snapshot alongside existing session files |
+| In-memory snapshot | ✅ PR 9 | `SotyEvidenceSnapshot` object in React state |
+| JSON preview | ✅ PR 9 | `renderEvidenceJson()` — copy to clipboard |
+| Markdown preview | ✅ PR 9 | `renderEvidenceMarkdown()` — copy to clipboard |
+| `soty_evidence.json` file | ✅ PR 10 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
+| `soty_evidence.md` file | ✅ PR 10 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
+| Evidence directory integration | planned | BOFA Gate / SotyHUB export from SOTY snapshot |
 
 ---
 
-## Files (PR 9)
+## Files
 
+**PR 9 (frontend snapshot + renderers)**
 - `src/types/sotyEvidence.ts` — all snapshot types
 - `src/lib/sotyEvidenceBuilder.ts` — `buildEvidenceSnapshot()` pure builder
 - `src/lib/sotyEvidenceRedaction.ts` — `isUnsafeFieldName()`, `deepStripUnsafeFields()`
@@ -112,10 +113,14 @@ interface SotyEvidenceSnapshot {
 - `src/lib/sotyEvidenceJson.ts` — `renderEvidenceJson()` sorted/stable serializer
 - `src/components/soty/SotyEvidencePanel.tsx` — dashboard UI panel
 
+**PR 10 (filesystem persistence)**
+- `src-tauri/src/evidence.rs` — `write_soty_evidence()`, `SotyEvidenceSaveResult`, `validate_soty_dir_name()`
+- `src-tauri/src/commands.rs` — `save_soty_evidence` Tauri command
+- `src/lib/sotyEvidencePersistence.ts` — `saveEvidenceSnapshot()` TypeScript wrapper
+
 ---
 
 ## Follow-up PRs
 
-- **PR 10** — Filesystem persistence: write `soty_evidence.json` + `soty_evidence.md` to the local evidence directory.
-- **PR 10** — BOFA Gate extension: include BOFA Gate decision in the snapshot.
+- Future — BOFA Gate extension: include BOFA Gate decision in the snapshot.
 - Future — OSINT opened-resource tracking: record resource metadata per opened resource when the operator explicitly opens one.
