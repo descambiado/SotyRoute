@@ -99,7 +99,8 @@ interface SotyEvidenceSnapshot {
 | Markdown preview | ✅ PR 9 | `renderEvidenceMarkdown()` — copy to clipboard |
 | `soty_evidence.json` file | ✅ PR 10 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
 | `soty_evidence.md` file | ✅ PR 10 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
-| Evidence directory integration | planned | BOFA Gate / SotyHUB export from SOTY snapshot |
+| `bofa_export.json` file | ✅ PR 11 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
+| `sotyhub_export.json` file | ✅ PR 11 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
 
 ---
 
@@ -118,9 +119,22 @@ interface SotyEvidenceSnapshot {
 - `src-tauri/src/commands.rs` — `save_soty_evidence` Tauri command
 - `src/lib/sotyEvidencePersistence.ts` — `saveEvidenceSnapshot()` TypeScript wrapper
 
+**PR 11 (BOFA Gate + SotyHUB export)**
+- `src/types/bofaGate.ts` — extended `BofaGateDecision`, module lists
+- `src/types/sotyBofaExport.ts` — `SotyBofaExportPayload`
+- `src/types/sotyHubExport.ts` — `SotyHubExportPayload`
+- `src/lib/sotyBofaGate.ts` — `buildBofaGateDecision()` deterministic gate engine
+- `src/lib/sotyBofaExport.ts` — `buildBofaExportPayload()`, `renderBofaExportJson()`
+- `src/lib/sotyHubExport.ts` — `buildSotyhubExportPayload()`, `renderSotyhubExportJson()`
+- `src/lib/sotyExportPersistence.ts` — `saveExports()` Tauri invoke wrapper
+- `src/lib/sotyEvidenceRedaction.ts` — `SAFE_FIELD_EXCEPTIONS` updated with `osint_query_content_logged`
+- `src/components/soty/SotyBofaGatePanel.tsx` — gate decision display
+- `src/components/soty/SotyExportPanel.tsx` — export prepare + save UI
+- `src-tauri/src/evidence.rs` — `write_soty_exports()`, `SotyExportSaveResult`
+- `src-tauri/src/commands.rs` — `save_soty_exports` Tauri command
+
 ---
 
 ## Follow-up PRs
 
-- Future — BOFA Gate extension: include BOFA Gate decision in the snapshot.
 - Future — OSINT opened-resource tracking: record resource metadata per opened resource when the operator explicitly opens one.

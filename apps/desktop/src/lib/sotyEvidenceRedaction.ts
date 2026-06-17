@@ -35,6 +35,7 @@ export const SAFE_FIELD_EXCEPTIONS = new Set([
   "credentials_logged",
   "tokens_logged",
   "cookies_logged",
+  "osint_query_content_logged",
 ]);
 
 export function isUnsafeFieldName(key: string): boolean {

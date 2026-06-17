@@ -8,6 +8,53 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 11)
+- `src/types/bofaGate.ts` — extended `BofaGateDecision`: adds `verdict`, `route_pack_id`,
+  `soty_state`, `required_evidence_level`, `current_evidence_level`, `allowed_modules`,
+  `disallowed_modules`, `blocking_reasons`, `warning_reasons`, `required_preflight_checks`,
+  `evidence_snapshot_id`, `generated_at`. `BOFA_ALLOWED_MODULES` (6 safe modules) and
+  `BOFA_DISALLOWED_MODULES` (7 always-disallowed modules) exported as `const` arrays.
+- `src/types/sotyBofaExport.ts` — `SotyBofaExportPayload`: schema `soty_bofa_v1`, gate
+  decision, module lists, redaction guarantees (all-false), local-only path note.
+- `src/types/sotyHubExport.ts` — `SotyHubExportPayload`: schema `soty_hub_v1`, score/pack/
+  mission/host/OSINT/BOFA gate summaries (counts only), `never_exported` list, `limitations`,
+  extended redaction block including `raw_host_data_logged` and `osint_query_content_logged`.
+- `src/lib/sotyBofaGate.ts` — `buildBofaGateDecision(score, routePack, snapshotId)`:
+  deterministic local gate engine; no external calls. Blocked by `SOTY_BLOCKED`,
+  `SOTY_EXPOSED`, `SOTY_DIRTY`, or `disabled` pack mode. `SOTY_WARN` → `warning`.
+  `SOTY_READY` + gated/enabled pack → `allowed`. Per-verdict preflight check lists.
+- `src/lib/sotyBofaExport.ts` — `buildBofaExportPayload()` + `renderBofaExportJson()`:
+  sorted-key serializer, `deepStripUnsafeFields` applied before serialisation.
+- `src/lib/sotyHubExport.ts` — `buildSotyhubExportPayload()` + `renderSotyhubExportJson()`:
+  same serialisation guards; OSINT/Host Guard summaries contain counts only.
+- `src/lib/sotyExportPersistence.ts` — `saveExports()` wrapper: renders both payloads and
+  invokes `save_soty_exports` Tauri command; returns `SaveExportsOutcome`.
+- `src/lib/sotyEvidenceRedaction.ts` — `SAFE_FIELD_EXCEPTIONS` updated with
+  `osint_query_content_logged` so the new SotyHUB redaction field survives `deepStripUnsafeFields`.
+- `src/components/soty/SotyBofaGatePanel.tsx` — gate decision display: verdict badge,
+  allowed/disallowed module lists, blocking/warning reasons, preflight checks. Local-only notice.
+- `src/components/soty/SotyExportPanel.tsx` — export UI: "Prepare BOFA export",
+  "Prepare SotyHUB export", "Save exports locally" buttons with idle/preparing/saving/saved/error
+  states. No external calls; no SotyHUB upload.
+- `src/pages/SotyDashboard.tsx` — "Open BOFA Gate" CTA (replaces disabled "Launch BOFA Route");
+  BOFA Gate + Export panel rendered below Evidence panel. Preset/pack changes clear stale gate.
+- `src-tauri/src/evidence.rs` — `write_soty_exports(bofa_json, sotyhub_json)`: same path safety
+  pattern as `write_soty_evidence` (internally generated timestamp directory, `validate_soty_dir_name`,
+  `assert_within_evidence_root`). Returns `SotyExportSaveResult`.
+- `src-tauri/src/commands.rs` — `save_soty_exports` Tauri command; no user-controlled path accepted.
+- `src-tauri/src/main.rs` — `save_soty_exports` registered in `invoke_handler`.
+- Tests: `sotyBofaGate.test.ts` (28 tests) — all gate verdicts, unsafe module absence, preflight
+  checks, preflight_passed logic, module counts by integration mode.
+  `sotyBofaExport.test.ts` (20 tests) — schema, redaction, allowed/disallowed modules, JSON safety.
+  `sotyHubExport.test.ts` (22 tests) — schema, counts-only summaries, redaction including
+  `osint_query_content_logged`, `never_exported`, JSON safety.
+  `sotyExportPersistence.test.ts` (9 tests) — Tauri invoke command name, arg shape (no path arg),
+  JSON validity, success/error paths, fixed filenames.
+- `docs/bofa-gate.md` — new: gate decision model, module tables, safety boundaries.
+- `docs/sotyhub-export.md` — new: SotyHUB export schema, never-exported table, limitations.
+- `docs/evidence-model.md` — updated: `bofa_export.json` and `sotyhub_export.json` outputs
+  marked live; PR 11 file list added.
+
 ### Added (PR 10)
 - `src-tauri/src/evidence.rs` — `write_soty_evidence()` persists `soty_evidence.json` and
   `soty_evidence.md` to a new timestamped run directory under `~/.sotyroute/runs/<timestamp>_soty/`.

@@ -17,7 +17,16 @@ export { MISSION_TYPES } from "./routeCard";
 
 export type { BofaIntegrationMode, RoutePack } from "./routePack";
 
-export type { BofaGateDecision } from "./bofaGate";
+export type {
+  BofaGateDecision,
+  BofaGateVerdict,
+  BofaAllowedModule,
+  BofaDisallowedModule,
+} from "./bofaGate";
+export { BOFA_ALLOWED_MODULES, BOFA_DISALLOWED_MODULES } from "./bofaGate";
+
+export type { SotyBofaExportPayload } from "./sotyBofaExport";
+export type { SotyHubExportPayload } from "./sotyHubExport";
 
 export type {
   HostGuardStatus,

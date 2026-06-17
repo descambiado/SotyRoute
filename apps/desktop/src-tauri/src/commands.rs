@@ -1,4 +1,7 @@
-use crate::evidence::{self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult};
+use crate::evidence::{
+    self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult,
+    SotyExportSaveResult,
+};
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
 use crate::system::{self, DoctorReport};
@@ -314,4 +317,12 @@ pub fn save_soty_evidence(
     md_content: String,
 ) -> CmdResult<SotyEvidenceSaveResult> {
     evidence::write_soty_evidence(&json_content, &md_content).map_err(err)
+}
+
+#[tauri::command]
+pub fn save_soty_exports(
+    bofa_json: String,
+    sotyhub_json: String,
+) -> CmdResult<SotyExportSaveResult> {
+    evidence::write_soty_exports(&bofa_json, &sotyhub_json).map_err(err)
 }
