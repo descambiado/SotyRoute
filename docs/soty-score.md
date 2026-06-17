@@ -250,6 +250,38 @@ No people-search, credential-dump, or dark-web resources are openable.
 Blocked entries are visible as policy cards but have no action available.
 All allowed-use copy audited by test suite for banned phrases.
 
+## 11. PR 9 Evidence Snapshot status
+
+SOTY Dashboard sessions can now produce a local evidence snapshot (PR 9, frontend-only).
+Clicking "Generate Evidence" assembles a `SotyEvidenceSnapshot` from the current dashboard
+state and renders it in a panel with copy-to-clipboard actions. No filesystem writes in PR 9.
+
+**New in PR 9:**
+
+- `src/types/sotyEvidence.ts` — `SotyEvidenceSnapshot` and all sub-summary types.
+- `src/lib/sotyEvidenceBuilder.ts` — `buildEvidenceSnapshot()` pure function; assembles snapshot
+  from score, route pack, route card, Host Guard summary, and OSINT catalog counts.
+- `src/lib/sotyEvidenceRedaction.ts` — `isUnsafeFieldName()`, `stripUnsafeFields()`,
+  `deepStripUnsafeFields()` — defence-in-depth field stripping before serialization.
+- `src/lib/sotyEvidenceMarkdown.ts` — `renderEvidenceMarkdown()` — 10-section evidence.md preview.
+- `src/lib/sotyEvidenceJson.ts` — `renderEvidenceJson()` — sorted, stable JSON serialization.
+- `src/components/soty/SotyEvidencePanel.tsx` — inline panel with score, pack, card, Host Guard,
+  OSINT summary, redaction guarantees, and copy-to-clipboard actions.
+- `src/pages/SotyDashboard.tsx` — "Generate Evidence" CTA enabled; snapshot clears on preset change.
+- `docs/evidence-model.md` — full evidence model documentation.
+
+**Evidence Score connection:**
+
+The Evidence sub-score (15% of overall) reflects whether the session has evidence enabled,
+an active evidence directory, and a session ID. In PR 9, the snapshot captures the current
+`evidence_score` from the active demo preset. Filesystem integration that would actually
+advance the Evidence Score arrives in PR 10.
+
+**Safety guarantees maintained in PR 9:**
+No query content, credentials, tokens, cookies, or external page content captured.
+No external API calls. No filesystem writes. No system mutations.
+Redaction guarantees are structurally false at the type level — not runtime-derived.
+
 ## 9. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions. ✓ Done

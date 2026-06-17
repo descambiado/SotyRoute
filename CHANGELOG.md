@@ -8,6 +8,33 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 9)
+- `src/types/sotyEvidence.ts` — `SotyEvidenceSnapshot` and all sub-summary types:
+  `SotyEvidenceScoreSummary`, `SotyEvidenceRoutePackSummary`, `SotyEvidenceRouteCardSummary`,
+  `SotyEvidenceHostGuardSummary`, `SotyEvidenceOsintOpenedResource`, `SotyEvidenceOsintSummary`,
+  `SotyEvidenceRedactionGuarantees`. Schema version constant `SOTY_EVIDENCE_SCHEMA_VERSION = "1"`.
+- `src/lib/sotyEvidenceBuilder.ts` — `buildEvidenceSnapshot()` pure function; assembles a
+  `SotyEvidenceSnapshot` from SOTY Score, Route Pack, Route Card, Host Guard, and OSINT catalog.
+  No query content, credentials, tokens, or external page content captured.
+- `src/lib/sotyEvidenceRedaction.ts` — `isUnsafeFieldName()`, `stripUnsafeFields()`,
+  `deepStripUnsafeFields()` — defence-in-depth field stripping; safe-exception whitelist for
+  redaction guarantee field names.
+- `src/lib/sotyEvidenceMarkdown.ts` — `renderEvidenceMarkdown()` — 10-section evidence.md
+  preview with explicit redaction copy and safety limitations.
+- `src/lib/sotyEvidenceJson.ts` — `renderEvidenceJson()` — alphabetically sorted, stable JSON
+  serialization with `deepStripUnsafeFields()` applied before output.
+- `src/components/soty/SotyEvidencePanel.tsx` — inline panel: score summary, state badge,
+  route pack/card/host guard/OSINT summaries, redaction guarantee grid, copy JSON/Markdown
+  buttons, disabled "Save to evidence directory" placeholder.
+- `src/pages/SotyDashboard.tsx` — "Generate Evidence" CTA enabled; snapshot clears on preset
+  change; evidence panel renders below Host Guard.
+- `src/styles/global.css` — evidence panel, limitation banner, score row, state badges,
+  kv grid, redaction grid, and action bar styles.
+- `docs/evidence-model.md` — full evidence model doc: schema, redaction guarantees, outputs,
+  and what is never captured.
+- Tests: `sotyEvidenceBuilder.test.ts` (57 tests), `sotyEvidenceRedaction.test.ts` (57 tests),
+  `sotyEvidenceMarkdown.test.ts` (35 tests) — 149 new tests. Suite total: 497 passing.
+
 ### Added (PR 8)
 - `src/types/osintNavigator.ts` — `OsintRiskLevel`, `OsintCategory`, `OsintResource`,
   `OsintFilterState`, `OsintConfirmationStatus`, `OsintConfirmationState`.
