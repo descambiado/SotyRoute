@@ -142,8 +142,36 @@ per pack are defined in `routePackDefaults.ts` (`osint_categories` field).
 
 ---
 
+## Evidence snapshot behavior (PR 9)
+
+When the operator clicks "Generate Evidence" on the SOTY Dashboard, the OSINT Navigator
+contributes a **catalog summary** to the evidence snapshot:
+
+```json
+{
+  "osint": {
+    "resources_total": 26,
+    "low_risk_count": 14,
+    "medium_risk_count": 6,
+    "high_risk_count": 3,
+    "blocked_count": 3,
+    "opened_resources": []
+  }
+}
+```
+
+**What is captured:** catalog structure counts by risk level.
+**What is never captured:** query content, search terms, external page contents, clicked URLs,
+clipboard contents, or any data derived from external resources.
+
+`opened_resources` is an empty array in PR 9 — per-resource tracking will be added in a
+future PR when Tauri `shell::open` integration ships and the navigator can observe which
+resources the operator explicitly opened.
+
+---
+
 ## Follow-up PRs
 
-- PR 9: Evidence Engine extension
 - Future: Tauri `shell::open` integration for one-click browser launch
+- Future: Per-resource opened tracking in evidence snapshot (metadata only — no query content)
 - Future: Route-pack-aware category pre-filtering based on the active pack's `osint_categories`

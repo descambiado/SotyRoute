@@ -15,9 +15,12 @@
  *       Local catalog of authorized defensive resources with category/risk
  *       filters, confirmation gates, and blocked-by-policy cards.
  *       No external API calls; no WebView embedding; no system mutations.
+ * PR 9: Evidence snapshot — "Generate Evidence" CTA enabled.
+ *       Assembles a local SotyEvidenceSnapshot from current dashboard state.
+ *       Copy JSON / Copy Markdown preview. No filesystem writes; no external calls.
  *
  * Safety: UI only. No external API calls. No AI inference. No system mutations.
- *         Pack selection, Host Guard, and OSINT Navigator all run local UI state.
+ *         Pack selection, Host Guard, OSINT Navigator, and Evidence all run local UI state.
  *         "Make me SOTY-ready" and "Launch BOFA Route" remain disabled.
  */
 import { useState, useRef } from "react";
@@ -36,6 +39,9 @@ import type { MissionType, RouteCard } from "../types/routeCard";
 import { runHostGuard, DEMO_HOST_GUARD_INPUTS } from "../lib/sotyHostGuardEngine";
 import type { HostGuardSummary } from "../types/hostGuard";
 import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
+import { buildEvidenceSnapshot } from "../lib/sotyEvidenceBuilder";
+import type { SotyEvidenceSnapshot } from "../types/sotyEvidence";
+import SotyEvidencePanel from "../components/soty/SotyEvidencePanel";
 
 import SotyScoreHero from "../components/soty/SotyScoreHero";
 import SotySubscoreGrid from "../components/soty/SotySubscoreGrid";
@@ -64,6 +70,10 @@ export default function SotyDashboard() {
   const [osintOpen, setOsintOpen] = useState(false);
   const osintRef = useRef<HTMLDivElement>(null);
 
+  // ── Evidence snapshot state (PR 9) ──────────────────────────────────────
+  const [evidenceSnapshot, setEvidenceSnapshot] = useState<SotyEvidenceSnapshot | null>(null);
+  const evidenceRef = useRef<HTMLDivElement>(null);
+
   // ── Mission builder state ────────────────────────────────────────────────
   const [selectedMission, setSelectedMission] = useState<MissionType | null>(null);
   const [builtCard, setBuiltCard] = useState<RouteCard | null>(null);
@@ -75,6 +85,7 @@ export default function SotyDashboard() {
     setPreset(key);
     setContextNote(null);
     setHostGuardSummary(null); // clear stale Host Guard result on preset change
+    setEvidenceSnapshot(null); // clear stale evidence on preset change
   }
 
   function handleRunHostGuard() {
@@ -89,6 +100,16 @@ export default function SotyDashboard() {
     setOsintOpen(true);
     setTimeout(() => {
       osintRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+
+  function handleGenerateEvidence() {
+    const snapshot = buildEvidenceSnapshot(score, selectedPack, builtCard, hostGuardSummary, {
+      demoPreset: preset,
+    });
+    setEvidenceSnapshot(snapshot);
+    setTimeout(() => {
+      evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   }
 
@@ -287,6 +308,13 @@ export default function SotyDashboard() {
           </button>
           <button
             className="btn"
+            onClick={handleGenerateEvidence}
+            title="Generate a local evidence snapshot from current dashboard state. No data sent externally."
+          >
+            Generate Evidence
+          </button>
+          <button
+            className="btn"
             disabled
             title="BOFA Route export — planned for PR 10. Requires BOFA Gate pre-flight."
           >
@@ -306,6 +334,24 @@ export default function SotyDashboard() {
           <hr className="section-divider" />
           <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>Host Guard</h2>
           <SotyHostGuardPanel summary={hostGuardSummary} />
+        </div>
+      )}
+
+      {/* ── Evidence panel (PR 9) ── */}
+      {evidenceSnapshot && (
+        <div ref={evidenceRef} style={{ marginTop: 24 }}>
+          <hr className="section-divider" />
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Evidence Snapshot</h2>
+            <button
+              className="btn"
+              style={{ fontSize: 11.5, padding: "4px 10px" }}
+              onClick={() => setEvidenceSnapshot(null)}
+            >
+              Clear
+            </button>
+          </div>
+          <SotyEvidencePanel snapshot={evidenceSnapshot} />
         </div>
       )}
 

@@ -36,3 +36,15 @@ export type {
   OsintConfirmationStatus,
   OsintConfirmationState,
 } from "./osintNavigator";
+
+export type {
+  SotyEvidenceScoreSummary,
+  SotyEvidenceRoutePackSummary,
+  SotyEvidenceRouteCardSummary,
+  SotyEvidenceHostGuardSummary,
+  SotyEvidenceOsintOpenedResource,
+  SotyEvidenceOsintSummary,
+  SotyEvidenceRedactionGuarantees,
+  SotyEvidenceSnapshot,
+} from "./sotyEvidence";
+export { SOTY_EVIDENCE_SCHEMA_VERSION } from "./sotyEvidence";
