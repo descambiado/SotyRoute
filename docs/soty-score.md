@@ -216,6 +216,40 @@ No system mutations. No external API calls. No firewall/routing/DNS/proxy change
 No process killing. No memory scanning. No AV/EDR replacement claims.
 Host Guard is a read-only posture check surface — it cannot guarantee the host is clean.
 
+## 10. PR 8 Ethical OSINT Navigator status
+
+The Ethical OSINT Navigator is now live on the SOTY Dashboard (PR 8, frontend-only). "Open
+OSINT Navigator" CTA enabled. The navigator displays a local catalog of 26 authorized
+defensive research resources with category and risk filters, confirmation gates, and
+blocked-by-policy cards.
+
+**New in PR 8:**
+
+- `src/types/osintNavigator.ts` — `OsintRiskLevel`, `OsintCategory`, `OsintResource`,
+  `OsintFilterState`, `OsintConfirmationStatus`, `OsintConfirmationState`.
+- `src/lib/osintCatalog.ts` — 26 resources (14 low, 6 medium, 3 high, 3 blocked);
+  `OSINT_CATALOG_BY_ID` lookup; all allowed-use copy audited against banned phrases.
+- `src/lib/osintNavigatorPresenter.ts` — `riskToVariant()`, `riskToConfirmationWarning()`,
+  `filterResources()`, label maps, `OSINT_LIMITATION_COPY`, `OSINT_EXTERNAL_RESOURCE_WARNING`.
+- `src/components/soty/SotyOsintNavigator.tsx` — filter bar + resource grid + confirmation modal.
+- `src/components/soty/OsintResourceCard.tsx` — per-resource card with risk badge, categories,
+  allowed-use, mission relevance, and open/blocked action.
+- `src/components/soty/OsintConfirmationModal.tsx` — risk-aware confirmation gate; copies URL
+  to clipboard (Tauri `shell::open` is a future-PR placeholder).
+- `docs/osint-navigator.md` — full doc: risk levels, categories, resource catalog, blocked list.
+
+**SOTY Intel sub-score connection:**
+
+The `intel_score` (10% of overall) is influenced by whether an appropriate route pack is
+selected and whether OSINT categories are enabled. The OSINT Navigator surfaces the resources
+within those enabled categories.
+
+**Safety guarantees maintained in PR 8:**
+No external API calls. No WebView embedding. No scraping automation. No query logging.
+No people-search, credential-dump, or dark-web resources are openable.
+Blocked entries are visible as policy cards but have no action available.
+All allowed-use copy audited by test suite for banned phrases.
+
 ## 9. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions. ✓ Done
@@ -223,8 +257,8 @@ Host Guard is a read-only posture check surface — it cannot guarantee the host
 - **PR 4** — dashboard surfaces the big SOTY Score and state. ✓ Done
 - **PR 5** — Mission Route builder (Soty Agent). ✓ Done
 - **PR 6** — Route Pack context, score integration, and mission suggestions. ✓ Done
-- **PR 7** — Host Guard posture scan (user-initiated; no auto-mutation).
-- **PR 8** — Ethical OSINT Navigator.
+- **PR 7** — Host Guard posture scan (user-initiated; no auto-mutation). ✓ Done
+- **PR 8** — Ethical OSINT Navigator. ✓ Done
 - **PR 9** — score report folded into the Evidence Engine.
 - **PR 10** — BOFA Gate and export extension.
 

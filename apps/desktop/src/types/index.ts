@@ -27,3 +27,12 @@ export type {
   HostGuardInput,
   HostGuardSummary,
 } from "./hostGuard";
+
+export type {
+  OsintRiskLevel,
+  OsintCategory,
+  OsintResource,
+  OsintFilterState,
+  OsintConfirmationStatus,
+  OsintConfirmationState,
+} from "./osintNavigator";

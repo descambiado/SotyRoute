@@ -11,11 +11,14 @@
  * PR 7: Host Guard posture checks — "Run Host Guard" CTA enabled.
  *       Runs a deterministic read-only engine against demo signals matching
  *       the active preset. No real system checks; no mutations.
+ * PR 8: Ethical OSINT Navigator — "Open OSINT Navigator" CTA enabled.
+ *       Local catalog of authorized defensive resources with category/risk
+ *       filters, confirmation gates, and blocked-by-policy cards.
+ *       No external API calls; no WebView embedding; no system mutations.
  *
  * Safety: UI only. No external API calls. No AI inference. No system mutations.
- *         Pack selection and Host Guard run local UI state only.
- *         "Make me SOTY-ready", "Launch BOFA Route", and "Open OSINT Navigator"
- *         remain disabled pending their respective PRs.
+ *         Pack selection, Host Guard, and OSINT Navigator all run local UI state.
+ *         "Make me SOTY-ready" and "Launch BOFA Route" remain disabled.
  */
 import { useState, useRef } from "react";
 import {
@@ -32,6 +35,7 @@ import type { MissionType, RouteCard } from "../types/routeCard";
 
 import { runHostGuard, DEMO_HOST_GUARD_INPUTS } from "../lib/sotyHostGuardEngine";
 import type { HostGuardSummary } from "../types/hostGuard";
+import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
 
 import SotyScoreHero from "../components/soty/SotyScoreHero";
 import SotySubscoreGrid from "../components/soty/SotySubscoreGrid";
@@ -56,6 +60,10 @@ export default function SotyDashboard() {
   const [hostGuardSummary, setHostGuardSummary] = useState<HostGuardSummary | null>(null);
   const hostGuardRef = useRef<HTMLDivElement>(null);
 
+  // ── OSINT Navigator state ─────────────────────────────────────────────────
+  const [osintOpen, setOsintOpen] = useState(false);
+  const osintRef = useRef<HTMLDivElement>(null);
+
   // ── Mission builder state ────────────────────────────────────────────────
   const [selectedMission, setSelectedMission] = useState<MissionType | null>(null);
   const [builtCard, setBuiltCard] = useState<RouteCard | null>(null);
@@ -74,6 +82,13 @@ export default function SotyDashboard() {
     setHostGuardSummary(summary);
     setTimeout(() => {
       hostGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+
+  function handleOpenOsintNavigator() {
+    setOsintOpen(true);
+    setTimeout(() => {
+      osintRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   }
 
@@ -148,8 +163,8 @@ export default function SotyDashboard() {
       <div className="banner">
         <strong>What's here:</strong> SOTY Score (PR&nbsp;3 engine, demo presets) · Route Packs
         as workflow presets (PR&nbsp;6) · Mission-to-Route Builder (PR&nbsp;5) · Host Guard
-        posture checks (PR&nbsp;7, demo mode). Selecting a Route Pack updates the score context
-        and suggests compatible missions.{" "}
+        posture checks (PR&nbsp;7, demo mode) · Ethical OSINT Navigator (PR&nbsp;8, local catalog).
+        Selecting a Route Pack updates the score context and suggests compatible missions.{" "}
         <strong>No real system checks run and no settings are changed here.</strong>
       </div>
 
@@ -265,8 +280,8 @@ export default function SotyDashboard() {
           </button>
           <button
             className="btn"
-            disabled
-            title="Ethical OSINT Navigator — planned for PR 8."
+            onClick={handleOpenOsintNavigator}
+            title="Open the Ethical OSINT Navigator — local resource catalog with category/risk filters and confirmation gates. No external API calls."
           >
             Open OSINT Navigator
           </button>
@@ -291,6 +306,24 @@ export default function SotyDashboard() {
           <hr className="section-divider" />
           <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>Host Guard</h2>
           <SotyHostGuardPanel summary={hostGuardSummary} />
+        </div>
+      )}
+
+      {/* ── OSINT Navigator panel (PR 8) ── */}
+      {osintOpen && (
+        <div ref={osintRef} style={{ marginTop: 24 }}>
+          <hr className="section-divider" />
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Ethical OSINT Navigator</h2>
+            <button
+              className="btn"
+              style={{ fontSize: 11.5, padding: "4px 10px" }}
+              onClick={() => setOsintOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+          <SotyOsintNavigator selectedPackId={selectedPackId} />
         </div>
       )}
     </div>

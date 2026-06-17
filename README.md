@@ -21,8 +21,9 @@ Maintained by [@descambiado](https://github.com/descambiado) as part of the **So
 > - **PR 5** — Mission-to-Route Builder — deterministic local Soty Agent (no external AI call); all 10 mission types; full Route Card panel.
 > - **PR 6** — Route Packs as interactive workflow presets — score focus bars, compatible mission chips, pack mismatch warnings, SOTY_DIRTY demo preset. 257 tests.
 > - **PR 7** — Host Guard safe posture checks — "Run Host Guard" CTA enabled; deterministic read-only engine; 7 checks across host/route/process phases; demo mode (no real system calls).
+> - **PR 8** — Ethical OSINT Navigator — "Open OSINT Navigator" CTA enabled; 26-resource local catalog; category/risk filters; confirmation gates; blocked-by-policy cards for doxx/credential/dark-web tools.
 >
-> Remaining modules (**Ethical OSINT Navigator**, **BOFA Gate UI**) are design specs and arrive in PRs 8–11.
+> Remaining modules (**BOFA Gate UI**, **Evidence Engine extension**) are design specs and arrive in PRs 9–11.
 > See [docs/roadmap.md](docs/roadmap.md).
 
 ---
