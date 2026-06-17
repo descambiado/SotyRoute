@@ -889,3 +889,317 @@ label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6p
   border-top: 1px solid var(--border);
   background: var(--bg-0);
 }
+
+/* ================================================================
+   Ethical OSINT Navigator  (PR 8)
+   ================================================================ */
+
+.osint-navigator {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.osint-limitation-banner {
+  border-left-color: var(--info);
+  background: var(--info-bg);
+  color: var(--text-1);
+}
+
+/* ----- Filter bar ----- */
+.osint-filter-bar {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.osint-filter-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.osint-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  padding-top: 5px;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.osint-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.osint-filter-chip {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--bg-2);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: background 80ms, color 80ms, border-color 80ms;
+}
+.osint-filter-chip:hover { color: var(--text-0); border-color: var(--border-strong); }
+.osint-filter-chip.active {
+  background: var(--brand-bg);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+.osint-filter-chip.risk-ok.active    { background: var(--ok-bg);     color: var(--ok);     border-color: var(--ok); }
+.osint-filter-chip.risk-warn.active  { background: var(--warn-bg);   color: var(--warn);   border-color: var(--warn); }
+.osint-filter-chip.risk-danger.active{ background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+
+/* ----- Result meta ----- */
+.osint-result-meta {
+  font-size: 12px;
+}
+
+/* ----- Section divider label ----- */
+.osint-section-divider-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ----- Resource grid ----- */
+.osint-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+/* ----- Resource card ----- */
+.osint-resource-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 80ms;
+}
+.osint-resource-card:hover { border-color: var(--border-strong); }
+.osint-resource-card.ok     { border-left: 3px solid var(--ok); }
+.osint-resource-card.warn   { border-left: 3px solid var(--warn); }
+.osint-resource-card.danger { border-left: 3px solid var(--danger); }
+.osint-resource-card.idle   { border-left: 3px solid var(--border-strong); opacity: 0.75; }
+.osint-resource-card.blocked { background: var(--bg-2); }
+
+.osint-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.osint-card-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-0);
+}
+
+.osint-card-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.osint-card-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.osint-category-tag {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--bg-2);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+}
+
+.osint-card-desc {
+  font-size: 12.5px;
+  color: var(--text-1);
+  line-height: 1.5;
+}
+
+.osint-card-allowed {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.45;
+  padding: 8px 10px;
+  background: var(--bg-2);
+  border-radius: 4px;
+  border-left: 2px solid var(--border-strong);
+}
+.osint-card-allowed-label {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.osint-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.osint-card-missions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.osint-mission-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-family: var(--mono);
+}
+
+.osint-open-btn {
+  font-size: 12px;
+  padding: 5px 12px;
+  flex-shrink: 0;
+}
+
+.osint-blocked-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+}
+
+/* ----- Confirmation modal ----- */
+.osint-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.osint-modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  width: min(540px, 94vw);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.osint-modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.osint-modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.osint-modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-0);
+}
+
+.osint-modal-warning {
+  font-size: 12.5px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid;
+  line-height: 1.45;
+}
+.osint-modal-warning.ok     { color: var(--ok);     background: var(--ok-bg);     border-color: var(--ok); }
+.osint-modal-warning.warn   { color: var(--warn);   background: var(--warn-bg);   border-color: var(--warn); }
+.osint-modal-warning.danger { color: var(--danger); background: var(--danger-bg); border-color: var(--danger); }
+.osint-modal-warning.idle   { color: var(--text-2); background: var(--bg-2);      border-color: var(--border); }
+
+.osint-modal-body {
+  padding: 16px 20px;
+}
+
+.osint-modal-section-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.osint-modal-allowed-use {
+  font-size: 12.5px;
+  color: var(--text-1);
+  line-height: 1.5;
+}
+
+.osint-modal-url {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+
+.osint-modal-url-note {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.osint-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  background: var(--bg-0);
+}
+
+.osint-modal-copied-msg {
+  font-size: 12.5px;
+  color: var(--ok);
+  flex: 1;
+}

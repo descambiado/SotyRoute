@@ -8,6 +8,39 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 8)
+- `src/types/osintNavigator.ts` — `OsintRiskLevel`, `OsintCategory`, `OsintResource`,
+  `OsintFilterState`, `OsintConfirmationStatus`, `OsintConfirmationState`.
+- `src/lib/osintCatalog.ts` — 26 curated resources (14 low, 6 medium, 3 high, 3 blocked).
+  Blocked entries include people-search tools, credential-dump lookup, and dark-web indexes.
+  All allowed-use copy audited by test suite against banned phrases. `OSINT_CATALOG_BY_ID` helper.
+- `src/lib/osintNavigatorPresenter.ts` — `riskToVariant()`, `riskToConfirmationWarning()`,
+  `filterResources()`, `OSINT_CATEGORY_LABELS`, `OSINT_RISK_LABELS`, `OSINT_CATEGORIES`,
+  `OSINT_RISK_LEVELS`, `OSINT_LIMITATION_COPY`, `OSINT_EXTERNAL_RESOURCE_WARNING`.
+- `src/components/soty/SotyOsintNavigator.tsx` — category + risk filter bar; resource grid
+  split into active/blocked sections; confirmation modal state; pack-relevance badges.
+- `src/components/soty/OsintResourceCard.tsx` — card with risk badge, category chips,
+  description, allowed-use copy, mission tags, and open/blocked action button.
+- `src/components/soty/OsintConfirmationModal.tsx` — risk-aware confirmation gate; displays
+  allowed-use policy and URL for inspection; copies URL to clipboard on confirm.
+  Tauri shell::open is a future-PR placeholder.
+- `src/pages/SotyDashboard.tsx` — "Open OSINT Navigator" CTA enabled; panel renders below
+  Host Guard with a close button; passes selectedPackId for pack-relevance badges.
+- `src/styles/global.css` — OSINT Navigator, filter bar, resource card, and modal styles.
+- `docs/osint-navigator.md` — full doc: risk levels, categories, full resource catalog,
+  blocked-list rationale, confirmation gate behavior, Intel sub-score connection.
+- `src/__tests__/osintCatalog.test.ts` — 24 unit tests covering integrity, URL presence,
+  risk/category validity, confirmation requirements, and copy-safety (banned phrases absent).
+- `src/__tests__/osintNavigatorPresenter.test.ts` — 29 unit tests covering all presenter
+  functions, label maps, filter logic, and safety copy audits.
+
+**Safety guarantees maintained in PR 8:**
+No external API calls. No WebView embedding. No scraping automation. No query logging.
+No people-search, credential-dump, or dark-web resources are openable.
+Blocked entries are visible as policy cards only — no open button, no URL.
+All allowed-use and limitation copy audited by test suite for 15 banned phrases.
+No Rust files changed. No Tauri commands added or modified. No dependency updates.
+
 ### Added (PR 7)
 - `src/types/hostGuard.ts` — `HostGuardStatus`, `HostGuardCheckId`, `HostGuardCheckPhase`,
   `HostGuardCheck`, `HostGuardInput`, `HostGuardSummary` types.
