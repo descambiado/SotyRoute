@@ -203,18 +203,24 @@ export default function SotyDashboard() {
       {/* ── Page header ── */}
       <div className="page-header" style={{ marginBottom: 4 }}>
         <h1 style={{ margin: 0 }}>SOTY Score</h1>
+        <span className="status-badge idle" style={{ fontSize: 11, padding: "2px 8px" }}>
+          <span className="dot" />
+          Demo mode
+        </span>
       </div>
-      <div className="page-sub" style={{ marginBottom: 18 }}>
-        Before you operate, become SOTY-ready.
+      <div className="page-sub" style={{ marginBottom: 14 }}>
+        SOTY-ready route, OPSEC and evidence control plane. Before you operate, become SOTY-ready.
       </div>
 
-      {/* ── Information banner ── */}
-      <div className="banner">
-        <strong>What's here:</strong> SOTY Score (PR&nbsp;3 engine, demo presets) · Route Packs
-        as workflow presets (PR&nbsp;6) · Mission-to-Route Builder (PR&nbsp;5) · Host Guard
-        posture checks (PR&nbsp;7, demo mode) · Ethical OSINT Navigator (PR&nbsp;8, local catalog).
-        Selecting a Route Pack updates the score context and suggests compatible missions.{" "}
-        <strong>No real system checks run and no settings are changed here.</strong>
+      {/* ── Safe-mode notice ── */}
+      <div className="safe-mode-notice">
+        <strong>Local only.</strong>
+        All scoring, routing, posture checks and exports run locally.
+        No real system calls. No external APIs. No network traffic.
+        No BOFA launch. No SotyHUB upload.
+        Evidence and export files are written to{" "}
+        <span className="mono">~/.sotyroute/runs/</span> only.
+        For authorized security work only.
       </div>
 
       {/* ── Demo preset selector ── */}
@@ -242,6 +248,33 @@ export default function SotyDashboard() {
         </div>
       )}
 
+      {/* ── SOTY Workflow strip ── */}
+      {(() => {
+        const steps: Array<{ label: string; done: boolean }> = [
+          { label: "Score",            done: true },
+          { label: "Route Packs",      done: selectedPackId !== null },
+          { label: "Mission Route",    done: builtCard !== null },
+          { label: "Host Guard",       done: hostGuardSummary !== null },
+          { label: "OSINT Navigator",  done: osintOpen },
+          { label: "Evidence",         done: evidenceSnapshot !== null },
+          { label: "Local Exports",    done: bofaGate !== null },
+          { label: "BOFA Gate",        done: bofaGate !== null },
+        ];
+        return (
+          <div className="soty-workflow-strip">
+            <span className="workflow-strip-label">Workflow</span>
+            {steps.map((step, i) => (
+              <span key={step.label}>
+                {i > 0 && <span className="workflow-arrow"> → </span>}
+                <span className={`workflow-step${step.done ? " done" : step.label === "Score" ? " active" : ""}`}>
+                  {step.label}
+                </span>
+              </span>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* ── Big SOTY Score hero ── */}
       <SotyScoreHero score={score} />
 
@@ -254,13 +287,14 @@ export default function SotyDashboard() {
         <RecommendedFixList deductions={score.deductions} />
       </div>
 
-      {/* ── Route Packs section (PR 6) ── */}
+      {/* ── Route Packs section ── */}
       <section style={{ marginTop: 32 }}>
-        <div className="pack-section-header">
-          <h2 className="pack-section-title">Route Packs</h2>
-          <span className="pack-section-sub">
-            Select a pack to see compatible missions, score focus and context.
-            Pack selection updates local UI only — no system changes occur.
+        <div className="soty-section-header">
+          <span className="soty-section-step">2</span>
+          <h2 className="soty-section-title">Route Packs</h2>
+          <span className="soty-section-sub">
+            Select a workflow preset — updates score context and suggests compatible missions.
+            Local UI only; no system changes.
           </span>
         </div>
 
@@ -280,9 +314,17 @@ export default function SotyDashboard() {
         )}
       </section>
 
-      {/* ── Mission-to-Route Builder (PR 5) ── */}
+      {/* ── Mission-to-Route Builder ── */}
       <hr className="section-divider" />
       <div ref={missionBuilderRef}>
+        <div className="soty-section-header" style={{ marginBottom: 16 }}>
+          <span className="soty-section-step">3</span>
+          <h2 className="soty-section-title">Mission Route</h2>
+          <span className="soty-section-sub">
+            Pick a mission — the local Soty Agent builds a Route Card with recommended mode,
+            required checks, allowed/disallowed modules and next safe actions.
+          </span>
+        </div>
         <SotyMissionBuilder
           selectedMission={selectedMission}
           onMissionChange={setSelectedMission}
@@ -296,84 +338,98 @@ export default function SotyDashboard() {
         )}
       </div>
 
-      {/* ── Action CTAs ── */}
+      {/* ── SOTY Workflow actions ── */}
       <hr className="section-divider" />
       <div>
-        <h2 style={{ margin: "0 0 8px", fontSize: 16 }}>Actions</h2>
+        <div className="soty-section-header" style={{ marginBottom: 10 }}>
+          <h2 className="soty-section-title" style={{ fontSize: 16 }}>SOTY Workflow</h2>
+        </div>
         <p className="muted" style={{ marginBottom: 14 }}>
-          "Build Mission Route" scrolls to the Mission Builder above.
-          "Open BOFA Gate" runs the local gate engine against the current score and pack.
-          No system modifications are made without explicit confirmation.
+          Run each step in sequence to build a complete SOTY-ready posture.
+          All steps run locally — no system modifications, no external calls, no network traffic.
+          <span style={{ color: "var(--text-2)", fontStyle: "italic" }}>
+            {" "}Make me SOTY-ready (auto-remediation) is planned for a future release.
+          </span>
         </p>
         <div className="soty-cta-row">
           <button
             className="btn primary"
             disabled
-            title="Automatic remediation — planned for a future PR. No system changes made now."
+            title="Automatic remediation — planned for a future release. No system changes are made now."
           >
             Make me SOTY-ready
           </button>
           <button
             className="btn"
             onClick={() => handleScrollToBuilder("investigate_domain")}
-            title="Scroll to the Mission-to-Route Builder section."
+            title="Scroll to the Mission Route builder."
           >
             Build Mission Route
           </button>
           <button
             className="btn"
             onClick={handleRunHostGuard}
-            title="Run Host Guard demo posture check against the active preset signals. No real system checks performed."
+            title="Run the Host Guard demo posture check. Reads demo signals only — no real system calls."
           >
-            Run Host Guard
+            {hostGuardSummary ? "Re-run Host Guard" : "Run Host Guard"}
           </button>
           <button
             className="btn"
             onClick={handleOpenOsintNavigator}
-            title="Open the Ethical OSINT Navigator — local resource catalog with category/risk filters and confirmation gates. No external API calls."
+            title="Open the Ethical OSINT Navigator — local authorized resource catalog. No external API calls."
           >
-            Open OSINT Navigator
+            {osintOpen ? "OSINT Navigator open ↓" : "Open OSINT Navigator"}
           </button>
           <button
             className="btn"
             onClick={handleGenerateEvidence}
             title="Generate a local evidence snapshot from current dashboard state. No data sent externally."
           >
-            Generate Evidence
+            {evidenceSnapshot ? "Re-generate Evidence" : "Generate Evidence"}
           </button>
           <button
             className="btn"
             onClick={handleOpenBofaGate}
-            title="Compute the local BOFA Gate decision for the current score and route pack. Does not launch BOFA. No external calls."
+            title="Compute the local BOFA Gate decision. Does not launch BOFA. No external calls."
           >
-            Open BOFA Gate
+            {bofaGate ? "Re-open BOFA Gate" : "Open BOFA Gate"}
           </button>
         </div>
-        <p className="muted" style={{ marginTop: 8 }}>
-          SotyRoute does not automate changes without explicit confirmation. It is not a VPN,
-          not Tor, not an antivirus, and does not guarantee anonymity. For authorized labs,
-          owned assets, and written-scope engagements only.
+        <p className="muted" style={{ marginTop: 8, fontSize: 11.5 }}>
+          Not a VPN · not Tor · not an antivirus · no anonymity guarantee · no offensive execution ·
+          no system mutations without explicit confirmation.
+          For authorized labs, owned assets and written-scope engagements only.
         </p>
       </div>
 
-      {/* ── Host Guard panel (PR 7) ── */}
+      {/* ── Host Guard panel ── */}
       {hostGuardSummary && (
         <div ref={hostGuardRef} style={{ marginTop: 24 }}>
           <hr className="section-divider" />
-          <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>Host Guard</h2>
+          <div className="soty-section-header" style={{ marginBottom: 12 }}>
+            <span className="soty-section-step">4</span>
+            <h2 className="soty-section-title">Host Guard</h2>
+            <span className="soty-section-sub" style={{ fontStyle: "italic" }}>
+              Demo mode — read-only signals, no real system calls
+            </span>
+          </div>
           <SotyHostGuardPanel summary={hostGuardSummary} />
         </div>
       )}
 
-      {/* ── Evidence panel (PR 9) ── */}
+      {/* ── Evidence panel ── */}
       {evidenceSnapshot && (
         <div ref={evidenceRef} style={{ marginTop: 24 }}>
           <hr className="section-divider" />
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
-            <h2 style={{ margin: 0, fontSize: 16 }}>Evidence Snapshot</h2>
+          <div className="soty-section-header" style={{ marginBottom: 12 }}>
+            <span className="soty-section-step">6</span>
+            <h2 className="soty-section-title">Evidence Snapshot</h2>
+            <span className="soty-section-sub">
+              Local snapshot — no data sent externally
+            </span>
             <button
               className="btn"
-              style={{ fontSize: 11.5, padding: "4px 10px" }}
+              style={{ fontSize: 11.5, padding: "4px 10px", marginLeft: 8 }}
               onClick={() => setEvidenceSnapshot(null)}
             >
               Clear
@@ -383,22 +439,19 @@ export default function SotyDashboard() {
         </div>
       )}
 
-      {/* ── BOFA Gate + Export panel (PR 11) ── */}
+      {/* ── BOFA Gate + Local Exports panel ── */}
       {bofaGateOpen && bofaGate && (
         <div ref={bofaGateRef} style={{ marginTop: 24 }}>
           <hr className="section-divider" />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              marginBottom: 12,
-            }}
-          >
-            <h2 style={{ margin: 0, fontSize: 16 }}>BOFA Gate</h2>
+          <div className="soty-section-header" style={{ marginBottom: 12 }}>
+            <span className="soty-section-step">7</span>
+            <h2 className="soty-section-title">BOFA Gate + Local Exports</h2>
+            <span className="soty-section-sub">
+              Local gate decision only — no BOFA launch, no SotyHUB upload
+            </span>
             <button
               className="btn"
-              style={{ fontSize: 11.5, padding: "4px 10px" }}
+              style={{ fontSize: 11.5, padding: "4px 10px", marginLeft: 8 }}
               onClick={() => setBofaGateOpen(false)}
             >
               Close
@@ -411,15 +464,19 @@ export default function SotyDashboard() {
         </div>
       )}
 
-      {/* ── OSINT Navigator panel (PR 8) ── */}
+      {/* ── OSINT Navigator panel ── */}
       {osintOpen && (
         <div ref={osintRef} style={{ marginTop: 24 }}>
           <hr className="section-divider" />
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
-            <h2 style={{ margin: 0, fontSize: 16 }}>Ethical OSINT Navigator</h2>
+          <div className="soty-section-header" style={{ marginBottom: 12 }}>
+            <span className="soty-section-step">5</span>
+            <h2 className="soty-section-title">Ethical OSINT Navigator</h2>
+            <span className="soty-section-sub">
+              Local authorized resource catalog — no external API calls, no WebView
+            </span>
             <button
               className="btn"
-              style={{ fontSize: 11.5, padding: "4px 10px" }}
+              style={{ fontSize: 11.5, padding: "4px 10px", marginLeft: 8 }}
               onClick={() => setOsintOpen(false)}
             >
               Close
