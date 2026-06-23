@@ -8,6 +8,25 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 12)
+- `src/styles/global.css` — `.evidence-save-success`, `.evidence-save-error` classes (used by
+  `SotyExportPanel` but previously missing from the stylesheet).
+- `src/styles/global.css` — `.safe-mode-notice`, `.soty-workflow-strip`, `.workflow-step`,
+  `.workflow-arrow`, `.soty-section-header`, `.soty-section-step`, `.soty-section-title`,
+  `.soty-section-sub` — new presentational classes for demo polish.
+- `src/pages/SotyDashboard.tsx` — SOTY Workflow strip showing 8 steps with `done` / `active`
+  states derived from existing UI state (no new logic). Replaces PR-reference info banner with a
+  `safe-mode-notice`. Renames "Actions" section to "SOTY Workflow" with improved CTA copy.
+  Adds numbered section headers (step circles) to Route Packs, Mission Route, Host Guard,
+  Evidence, BOFA Gate + Local Exports, and OSINT Navigator panels. CTA labels now reflect
+  current state (e.g., "Re-run Host Guard" when a result is present).
+- `README.md` — new product headline; updated status note (PRs 1–11 shipped); demo walkthrough
+  table (8 steps); expanded §7 safety boundaries; updated screenshot section with
+  `docs/assets/` placeholder paths; updated §14 roadmap; merged §15–17 with updated copy
+  removing stale "design spec" labels.
+- `docs/assets/README.md` — screenshot capture instructions for `soty-dashboard.png`,
+  `soty-evidence.png`, `soty-exports.png`.
+
 ### Added (PR 11)
 - `src/types/bofaGate.ts` — extended `BofaGateDecision`: adds `verdict`, `route_pack_id`,
   `soty_state`, `required_evidence_level`, `current_evidence_level`, `allowed_modules`,
