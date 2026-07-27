@@ -8,6 +8,32 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security (PR 14)
+- `apps/desktop/package.json` / `package-lock.json` — upgraded `vite` `^5.0.10` → `^8.1.5` and
+  `@vitejs/plugin-react` `^4.2.1` → `^6.0.2` (required in lockstep — `plugin-react@6.x` declares
+  `peerDependencies: { vite: "^8.0.0" }`). Resolves the last high-severity advisory blocking CI's
+  `npm audit --audit-level=high` gate:
+  - `vite` (high) — `server.fs.deny` bypass on Windows via alternate paths
+    ([GHSA-fx2h-pf6j-xcff](https://github.com/advisories/GHSA-fx2h-pf6j-xcff)); no patch existed
+    inside the 5.x/6.x/7.x lines, only 8.x.
+  - Also resolved as a side effect: 2 moderate `vite`/`esbuild` advisories tied to the same
+    range ([GHSA-4w7w-66w2-5vf9](https://github.com/advisories/GHSA-4w7w-66w2-5vf9),
+    [GHSA-v6wh-96g9-6wx3](https://github.com/advisories/GHSA-v6wh-96g9-6wx3),
+    [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)).
+  - `vitest@4.1.8` required no change — already declares peer support for
+    `vite: "^6.0.0 || ^7.0.0 || ^8.0.0"`.
+  - `vite.config.ts` required no changes — the project's config (fixed dev port, watch-ignore,
+    `build.target`/`outDir`/`sourcemap`, vitest `test` block) does not use any option removed or
+    relocated across the v5→v6→v7→v8 migration guides.
+  - Net effect: `npm audit --audit-level=high` now exits 0 (2 moderate `react-router` CVEs
+    remain, both below the `high` threshold; see PR 13's deferred list).
+  - Lockfile shrank by ~1,600 lines — Vite 8's Rolldown/Oxc engine drops the old
+    esbuild/Rollup transitive dependency tree.
+- Verified: `npm test` (589/589), `npx tsc --noEmit` (clean), `npm run build` (production build,
+  the same command Tauri's `beforeBuildCommand` invokes — succeeded), and a manual dev-server
+  smoke test (preset switching, workflow strip, no console errors) under `vite@8.1.5` +
+  `@vitejs/plugin-react@6.0.2`.
+
 ### Security (PR 13)
 - `apps/desktop/package-lock.json` — applied `npm audit fix` (non-breaking) to resolve 3 of the
   6 known npm advisories affecting the desktop app:
