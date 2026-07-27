@@ -84,7 +84,7 @@ pub fn load_from_path(path: &Path) -> anyhow::Result<Profile> {
         .to_lowercase();
     let profile: Profile = match ext.as_str() {
         "json" => serde_json::from_str(&raw)?,
-        "yaml" | "yml" | _ => serde_yaml::from_str(&raw)?,
+        _ => serde_yaml::from_str(&raw)?,
     };
     Ok(profile)
 }

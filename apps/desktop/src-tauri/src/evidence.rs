@@ -19,9 +19,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            evidence_dir: default_evidence_root()
-                .to_string_lossy()
-                .into_owned(),
+            evidence_dir: default_evidence_root().to_string_lossy().into_owned(),
             default_mode: "observe".into(),
             telemetry_enabled: false,
             public_ip_check_enabled: false,
@@ -98,11 +96,73 @@ pub fn load_settings() -> AppSettings {
 }
 
 pub fn save_settings(s: &AppSettings) -> anyhow::Result<()> {
+    validate_evidence_dir(&s.evidence_dir)?;
     let p = settings_path();
     if let Some(parent) = p.parent() {
         std::fs::create_dir_all(parent)?;
     }
     std::fs::write(&p, serde_json::to_string_pretty(s)?)?;
+    Ok(())
+}
+
+fn validate_evidence_dir(dir: &str) -> anyhow::Result<()> {
+    let p = PathBuf::from(dir);
+    for component in p.components() {
+        if component == std::path::Component::ParentDir {
+            anyhow::bail!("evidence_dir must not contain parent directory (..) components");
+        }
+    }
+    let lower = dir.to_lowercase().replace('\\', "/");
+    // Reject well-known system roots that should never receive evidence writes.
+    let blocked = [
+        "c:/windows",
+        "c:/program files",
+        "c:/program files (x86)",
+        "c:/programdata",
+        "/etc",
+        "/sys",
+        "/proc",
+        "/dev",
+        "/boot",
+    ];
+    for prefix in &blocked {
+        if lower.starts_with(prefix) {
+            anyhow::bail!(
+                "evidence_dir '{}' points to a restricted system directory",
+                dir
+            );
+        }
+    }
+    Ok(())
+}
+
+fn assert_within_evidence_root(path: &Path) -> anyhow::Result<()> {
+    // Defense-in-depth: confirm the resolved write target stays inside the evidence root.
+    // We cannot canonicalize non-existent paths, so we normalize separators and check
+    // for parent-dir components + prefix match.
+    for component in path.components() {
+        if component == std::path::Component::ParentDir {
+            anyhow::bail!(
+                "path traversal rejected: parent directory component in {}",
+                path.display()
+            );
+        }
+    }
+    let root = evidence_root();
+    let root_norm = root
+        .to_string_lossy()
+        .to_lowercase()
+        .replace('\\', "/")
+        .trim_end_matches('/')
+        .to_string();
+    let path_norm = path.to_string_lossy().to_lowercase().replace('\\', "/");
+    if !path_norm.starts_with(&root_norm) {
+        anyhow::bail!(
+            "path escape rejected: {} is outside evidence root {}",
+            path.display(),
+            root.display()
+        );
+    }
     Ok(())
 }
 
@@ -127,16 +187,13 @@ pub fn write_session(
     dry_run: bool,
 ) -> anyhow::Result<WriteResult> {
     let session_id = new_session_id(mode);
-    let dir = evidence_root().join(&folder_name(&session_id, mode));
+    let dir = evidence_root().join(folder_name(&session_id, mode));
+    assert_within_evidence_root(&dir)?;
     std::fs::create_dir_all(&dir)?;
 
     let started_at = checks.generated_at.clone();
     let ended_at = Utc::now().to_rfc3339();
-    let status = if plan
-        .warnings
-        .iter()
-        .any(|w| w.severity == "error")
-    {
+    let status = if plan.warnings.iter().any(|w| w.severity == "error") {
         "partial"
     } else {
         "completed"
@@ -254,10 +311,13 @@ fn render_markdown(
             profile.blocked_targets.join(", ")
         }
     ));
-    s.push_str("\n");
+    s.push('\n');
 
     s.push_str("## Host\n\n");
-    s.push_str(&format!("- os: `{}` ({})\n", checks.os_name, checks.os_version));
+    s.push_str(&format!(
+        "- os: `{}` ({})\n",
+        checks.os_name, checks.os_version
+    ));
     s.push_str(&format!("- hostname: `{}`\n", checks.hostname));
     s.push_str(&format!("- user: `{}`\n", checks.user));
     s.push_str(&format!("- admin: `{}`\n", checks.admin));
@@ -282,14 +342,14 @@ fn render_markdown(
             step.executes_in_v0_1_0
         ));
     }
-    s.push_str("\n");
+    s.push('\n');
 
     if !plan.warnings.is_empty() {
         s.push_str("## Warnings\n\n");
         for w in &plan.warnings {
             s.push_str(&format!("- `{}` ({}): {}\n", w.code, w.severity, w.message));
         }
-        s.push_str("\n");
+        s.push('\n');
     }
 
     s.push_str("## Notes\n\nThis report is part of the SotyRoute evidence bundle for the authorized lab the operator declared in the profile. SotyRoute does not validate that authorization; the operator carries that responsibility.\n");
@@ -309,15 +369,42 @@ pub fn list_sessions() -> Vec<SessionSummary> {
         if let Ok(text) = std::fs::read_to_string(&f) {
             if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
                 let summary = SessionSummary {
-                    session_id: v.get("session_id").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    mode: v.get("mode").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    profile_name: v.get("profile").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    started_at: v.get("started_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    ended_at: v.get("ended_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
+                    session_id: v
+                        .get("session_id")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    mode: v
+                        .get("mode")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    profile_name: v
+                        .get("profile")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    started_at: v
+                        .get("started_at")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    ended_at: v
+                        .get("ended_at")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
                     dry_run: v.get("dry_run").and_then(|x| x.as_bool()).unwrap_or(false),
                     admin: v.get("admin").and_then(|x| x.as_bool()).unwrap_or(false),
-                    status: v.get("status").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-                    warnings_count: v.get("warnings_count").and_then(|x| x.as_u64()).unwrap_or(0) as usize,
+                    status: v
+                        .get("status")
+                        .and_then(|x| x.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    warnings_count: v
+                        .get("warnings_count")
+                        .and_then(|x| x.as_u64())
+                        .unwrap_or(0) as usize,
                     evidence_dir: p.to_string_lossy().into_owned(),
                 };
                 out.push(summary);
@@ -344,14 +431,44 @@ pub fn read_session(session_id: &str) -> anyhow::Result<SessionDetail> {
     let sotyhub = dir.join("sotyhub_export.json");
 
     let summary = SessionSummary {
-        session_id: summary_v.get("session_id").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        mode: summary_v.get("mode").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        profile_name: summary_v.get("profile").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        started_at: summary_v.get("started_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        ended_at: summary_v.get("ended_at").and_then(|x| x.as_str()).unwrap_or("").to_string(),
-        dry_run: summary_v.get("dry_run").and_then(|x| x.as_bool()).unwrap_or(false),
-        admin: summary_v.get("admin").and_then(|x| x.as_bool()).unwrap_or(false),
-        status: summary_v.get("status").and_then(|x| x.as_str()).unwrap_or("").to_string(),
+        session_id: summary_v
+            .get("session_id")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        mode: summary_v
+            .get("mode")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        profile_name: summary_v
+            .get("profile")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        started_at: summary_v
+            .get("started_at")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        ended_at: summary_v
+            .get("ended_at")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
+        dry_run: summary_v
+            .get("dry_run")
+            .and_then(|x| x.as_bool())
+            .unwrap_or(false),
+        admin: summary_v
+            .get("admin")
+            .and_then(|x| x.as_bool())
+            .unwrap_or(false),
+        status: summary_v
+            .get("status")
+            .and_then(|x| x.as_str())
+            .unwrap_or("")
+            .to_string(),
         warnings_count: warnings.len(),
         evidence_dir: dir.to_string_lossy().into_owned(),
     };
@@ -363,7 +480,9 @@ pub fn read_session(session_id: &str) -> anyhow::Result<SessionDetail> {
         plan,
         evidence_md,
         bofa_export_path: bofa.exists().then(|| bofa.to_string_lossy().into_owned()),
-        sotyhub_export_path: sotyhub.exists().then(|| sotyhub.to_string_lossy().into_owned()),
+        sotyhub_export_path: sotyhub
+            .exists()
+            .then(|| sotyhub.to_string_lossy().into_owned()),
     })
 }
 
@@ -386,6 +505,7 @@ pub fn find_session_dir(session_id: &str) -> Option<PathBuf> {
 
 #[derive(Serialize)]
 struct BofaExport<'a> {
+    schema: u32,
     producer: &'static str,
     producer_version: &'static str,
     session_id: &'a str,
@@ -398,15 +518,115 @@ struct BofaExport<'a> {
     produced_at: String,
 }
 
+/// Result returned to the frontend after a SOTY evidence snapshot is persisted.
+#[derive(Debug, Clone, Serialize)]
+pub struct SotyEvidenceSaveResult {
+    pub directory: String,
+    pub json_filename: String,
+    pub md_filename: String,
+    pub generated_at: String,
+}
+
+/// Result returned to the frontend after BOFA + SotyHUB exports are saved.
+#[derive(Debug, Clone, Serialize)]
+pub struct SotyExportSaveResult {
+    pub directory: String,
+    pub bofa_filename: String,
+    pub sotyhub_filename: String,
+    pub generated_at: String,
+}
+
+/// Validate that an internally-generated run directory name contains no path
+/// separators, parent-dir components, or characters outside [A-Za-z0-9\-_].
+fn validate_soty_dir_name(name: &str) -> anyhow::Result<()> {
+    if name.is_empty() {
+        anyhow::bail!("soty run dir name must not be empty");
+    }
+    if name.contains('/') || name.contains('\\') {
+        anyhow::bail!("soty run dir name must not contain path separators");
+    }
+    if name.contains("..") {
+        anyhow::bail!("soty run dir name must not contain parent-dir components");
+    }
+    if !name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
+        anyhow::bail!(
+            "soty run dir name must contain only alphanumeric characters, hyphens, and underscores"
+        );
+    }
+    Ok(())
+}
+
+/// Write `soty_evidence.json` and `soty_evidence.md` into a new run directory
+/// under the evidence root.  The directory name is generated internally from
+/// the current UTC timestamp (`YYYYMMDD-HHMMSS_soty`); no user-controlled
+/// path components are accepted.
+///
+/// The caller is responsible for pre-rendering and pre-redacting both strings.
+pub fn write_soty_evidence(
+    json_content: &str,
+    md_content: &str,
+) -> anyhow::Result<SotyEvidenceSaveResult> {
+    let now = Utc::now();
+    let dir_name = format!("{}_soty", now.format("%Y%m%d-%H%M%S"));
+
+    validate_soty_dir_name(&dir_name)?;
+
+    let dir = evidence_root().join(&dir_name);
+    assert_within_evidence_root(&dir)?;
+    std::fs::create_dir_all(&dir)?;
+
+    std::fs::write(dir.join("soty_evidence.json"), json_content)?;
+    std::fs::write(dir.join("soty_evidence.md"), md_content)?;
+
+    Ok(SotyEvidenceSaveResult {
+        directory: dir.to_string_lossy().into_owned(),
+        json_filename: "soty_evidence.json".into(),
+        md_filename: "soty_evidence.md".into(),
+        generated_at: now.to_rfc3339(),
+    })
+}
+
+/// Write `bofa_export.json` and `sotyhub_export.json` into a new run directory
+/// under the evidence root.  Directory name generated internally from UTC timestamp;
+/// no user-controlled path components are accepted.
+pub fn write_soty_exports(
+    bofa_json: &str,
+    sotyhub_json: &str,
+) -> anyhow::Result<SotyExportSaveResult> {
+    let now = Utc::now();
+    let dir_name = format!("{}_soty", now.format("%Y%m%d-%H%M%S"));
+
+    validate_soty_dir_name(&dir_name)?;
+
+    let dir = evidence_root().join(&dir_name);
+    assert_within_evidence_root(&dir)?;
+    std::fs::create_dir_all(&dir)?;
+
+    std::fs::write(dir.join("bofa_export.json"), bofa_json)?;
+    std::fs::write(dir.join("sotyhub_export.json"), sotyhub_json)?;
+
+    Ok(SotyExportSaveResult {
+        directory: dir.to_string_lossy().into_owned(),
+        bofa_filename: "bofa_export.json".into(),
+        sotyhub_filename: "sotyhub_export.json".into(),
+        generated_at: now.to_rfc3339(),
+    })
+}
+
 pub fn write_bofa(
     dir: &Path,
     summary: &SessionSummary,
     warnings: &[Warning],
 ) -> anyhow::Result<PathBuf> {
+    assert_within_evidence_root(dir)?;
     let path = dir.join("bofa_export.json");
-    let preflight_passed = summary.status == "completed"
-        && !warnings.iter().any(|w| w.severity == "error");
+    let preflight_passed =
+        summary.status == "completed" && !warnings.iter().any(|w| w.severity == "error");
     let payload = BofaExport {
+        schema: 1,
         producer: "sotyroute-desktop",
         producer_version: env!("CARGO_PKG_VERSION"),
         session_id: &summary.session_id,
@@ -424,6 +644,7 @@ pub fn write_bofa(
 
 #[derive(Serialize)]
 struct SotyhubExport<'a> {
+    schema: u32,
     producer: &'static str,
     producer_version: &'static str,
     lab_id: Option<&'a str>,
@@ -443,12 +664,11 @@ pub fn write_sotyhub(
     summary: &SessionSummary,
     profile: &Profile,
 ) -> anyhow::Result<PathBuf> {
+    assert_within_evidence_root(dir)?;
     let path = dir.join("sotyhub_export.json");
-    let operator = profile
-        .owner
-        .as_deref()
-        .unwrap_or("unknown");
+    let operator = profile.owner.as_deref().unwrap_or("unknown");
     let payload = SotyhubExport {
+        schema: 1,
         producer: "sotyroute-desktop",
         producer_version: env!("CARGO_PKG_VERSION"),
         lab_id: None,
@@ -464,4 +684,53 @@ pub fn write_sotyhub(
     };
     std::fs::write(&path, serde_json::to_string_pretty(&payload)?)?;
     Ok(path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── validate_soty_dir_name ─────────────────────────────────────────────────
+
+    #[test]
+    fn rejects_empty_name() {
+        assert!(validate_soty_dir_name("").is_err());
+    }
+
+    #[test]
+    fn rejects_forward_slash() {
+        assert!(validate_soty_dir_name("foo/bar").is_err());
+    }
+
+    #[test]
+    fn rejects_backslash() {
+        assert!(validate_soty_dir_name("foo\\bar").is_err());
+    }
+
+    #[test]
+    fn rejects_parent_dir_dotdot() {
+        assert!(validate_soty_dir_name("..").is_err());
+        assert!(validate_soty_dir_name("foo..bar").is_err());
+    }
+
+    #[test]
+    fn rejects_space() {
+        assert!(validate_soty_dir_name("foo bar").is_err());
+    }
+
+    #[test]
+    fn rejects_special_chars() {
+        assert!(validate_soty_dir_name("foo!bar").is_err());
+        assert!(validate_soty_dir_name("foo@bar").is_err());
+        assert!(validate_soty_dir_name("foo:bar").is_err());
+        assert!(validate_soty_dir_name("foo*bar").is_err());
+        assert!(validate_soty_dir_name("foo?bar").is_err());
+    }
+
+    #[test]
+    fn accepts_valid_soty_dir_name() {
+        assert!(validate_soty_dir_name("20260617-120000_soty").is_ok());
+        assert!(validate_soty_dir_name("20241215-143021_soty").is_ok());
+        assert!(validate_soty_dir_name("19991231-235959_soty").is_ok());
+    }
 }
