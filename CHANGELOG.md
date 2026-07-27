@@ -8,6 +8,37 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security (PR 13)
+- `apps/desktop/package-lock.json` — applied `npm audit fix` (non-breaking) to resolve 3 of the
+  6 known npm advisories affecting the desktop app:
+  - `@babel/core` (low) — arbitrary file read via `sourceMappingURL` comment
+    ([GHSA-4x5r-pxfx-6jf8](https://github.com/advisories/GHSA-4x5r-pxfx-6jf8)) — patched
+    transitively via `@babel/*` bumps to 7.29.7.
+  - `postcss` (high) — path traversal via source map auto-loading
+    ([GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849)) — patched to 8.5.23.
+  - `react-router` / `react-router-dom` (moderate) — same-origin redirect via protocol-relative
+    URL reinterpretation ([GHSA-2j2x-hqr9-3h42](https://github.com/advisories/GHSA-2j2x-hqr9-3h42))
+    — patched to 6.30.4, the latest 6.x release.
+  - No `package.json` range changes — all fixes landed within existing `^` semver ranges.
+- Verified: `npm test` (589/589), `npx tsc --noEmit` (clean), and a manual dev-server smoke test
+  of `react-router-dom` navigation (HashRouter routing to `/soty` and sidebar links) — no
+  regressions.
+
+**Deferred — require a major-version bump, out of scope for this non-breaking security PR:**
+- `esbuild` / `vite` (moderate) — dev-server request forwarding
+  ([GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)); fix requires
+  Vite 8.1.5 (current: `^5.0.10`). Dev-server-only impact; does not affect production builds.
+- `react-router` / `react-router-dom` — 2 remaining moderate CVEs
+  ([GHSA-wrjc-x8rr-h8h6](https://github.com/advisories/GHSA-wrjc-x8rr-h8h6),
+  [GHSA-337j-9hxr-rhxg](https://github.com/advisories/GHSA-337j-9hxr-rhxg)) both require
+  `react-router-dom >=7.18.0` (current: `^6.21.1`). The SSR-hydration CVE
+  (GHSA-337j-9hxr-rhxg) does not apply to this client-only Tauri app.
+- 10 open Dependabot PRs (Tauri 1.5→2.11, TypeScript 6.x, react-router-dom 7.x,
+  `@vitejs/plugin-react` 6.x, `thiserror` 2.0, `whoami` 2.1, `dirs` 6.0, React 19 bumps) are
+  routine major-version updates, not tied to a specific advisory. Left open and untouched —
+  each needs its own migration PR with dedicated testing (Tauri 1→2 especially is a full API
+  surface rewrite).
+
 ### Added (PR 12)
 - `src/styles/global.css` — `.evidence-save-success`, `.evidence-save-error` classes (used by
   `SotyExportPanel` but previously missing from the stylesheet).
