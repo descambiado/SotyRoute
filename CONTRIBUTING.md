@@ -11,7 +11,7 @@ Thank you for your interest. SotyRoute is a serious tool for authorized security
 ## Development setup
 
 ```powershell
-# Prerequisites: Node.js 18+, Rust stable, MS C++ Build Tools, WebView2
+# Prerequisites: Node.js 20.19+ or 22.12+ (Vite 8), Rust stable, MS C++ Build Tools, WebView2
 cd apps/desktop
 npm install
 npm run tauri dev

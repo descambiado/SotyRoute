@@ -134,7 +134,7 @@ engagements** only. See [docs/legal-scope.md](docs/legal-scope.md).
 **Prerequisites**
 
 - Windows 10/11 (x64)
-- [Node.js](https://nodejs.org/) 18+
+- [Node.js](https://nodejs.org/) 20.19+ or 22.12+ (required by Vite 8 / Rolldown)
 - [Rust](https://www.rust-lang.org/tools/install) stable (`rustup`)
 - Microsoft C++ Build Tools (installed by Rust on Windows)
 - WebView2 runtime (preinstalled on Win11)
