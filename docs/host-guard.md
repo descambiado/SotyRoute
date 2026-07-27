@@ -1,9 +1,11 @@
 # Host Guard
 
-**Status: implemented — PR 7 (demo mode, deterministic engine).**
+**Status: implemented — PR 7 (deterministic engine), real signals since PR 15.**
 
-Host Guard provides read-only defensive posture checks. It runs a deterministic engine against
-the active demo preset signals and reports what it finds. No system modifications occur.
+Host Guard provides read-only defensive posture checks. Since PR 15 it reads real, read-only
+signals from the local machine via a Tauri command; the deterministic engine that evaluates
+those signals is unchanged from PR 7. No system modifications occur — Host Guard never writes
+to the firewall, registry, or any system setting.
 
 > **Host Guard provides defensive posture checks. It cannot guarantee the host is clean.**
 
@@ -15,25 +17,25 @@ Host Guard evaluates seven signals grouped into three phases:
 
 ### Host phase
 
-| Check ID | Signal | Pass condition |
-|---|---|---|
-| `HG_OS_DETECTED` | OS detection | OS information available |
-| `HG_ELEVATED` | Privilege level | Not running as admin/root |
-| `HG_FIREWALL` | Host firewall | Firewall enabled (null = unknown → warn) |
-| `HG_DEFENDER` | AV / EDR status | Defender or equivalent enabled (null = warn) |
+| Check ID | Signal | Real source | Pass condition |
+|---|---|---|---|
+| `HG_OS_DETECTED` | OS detection | Always true if the Tauri command returned | OS information available |
+| `HG_ELEVATED` | Privilege level | `is_elevated` crate | Not running as admin/root |
+| `HG_FIREWALL` | Host firewall | `Get-NetFirewallProfile` — all profiles must be enabled | Firewall enabled (null = unknown → warn) |
+| `HG_DEFENDER` | AV / EDR status | `Get-MpComputerStatus` — reflects Windows Defender only, not third-party AV | Defender enabled (null = warn) |
 
 ### Route phase
 
-| Check ID | Signal | Pass condition |
-|---|---|---|
-| `HG_SUSPICIOUS_PROXY` | System proxy settings | No suspicious proxy detected |
-| `HG_SUSPICIOUS_ROUTE` | Route table | No unexpected route entries |
+| Check ID | Signal | Real source | Pass condition |
+|---|---|---|---|
+| `HG_SUSPICIOUS_PROXY` | System proxy settings | Registry `ProxyEnable` flag | No system-level proxy configured |
+| `HG_SUSPICIOUS_ROUTE` | Route table | **Not yet implemented** — always reports `skip` in real mode | n/a |
 
 ### Process phase
 
-| Check ID | Signal | Pass condition |
-|---|---|---|
-| `HG_KNOWN_TUNNEL` | Known tunnel process | No unexpected tunnel process running |
+| Check ID | Signal | Real source | Pass condition |
+|---|---|---|---|
+| `HG_KNOWN_TUNNEL` | Known tunnel process | `Get-Process`, exact match against a known VPN/Tor/tunnel binary list | No known tunnel process running |
 
 ---
 
@@ -44,9 +46,13 @@ Host Guard evaluates seven signals grouped into three phases:
 | `pass` | Signal is nominal |
 | `warn` | Signal could not be determined, or warrants review |
 | `fail` | Signal indicates a posture issue that should be addressed |
-| `skip` | Check was not evaluated |
+| `skip` | Check was not evaluated (unsupported platform, or not yet implemented) |
 
-**Overall status**: `fail` if any check fails; `warn` if any check warns (no fails); `pass` if all pass.
+**Overall status**: `fail` if any check fails; `warn` if any check warns (no fails); `pass` if all pass (skips are ignored unless every check is skipped).
+
+Detecting a known tunnel process is a neutral/informational `warn`, not a `fail` — the operator
+may be intentionally running one. A configured system proxy is treated as a `fail`, surfaced for
+the operator to confirm it is expected before starting a session.
 
 ---
 
@@ -75,29 +81,37 @@ Running Host Guard and resolving its `fail` checks directly improves the SOTY Ho
 - Does not detect or remove malware
 - Does not replace antivirus or EDR tools
 - Does not guarantee the host is free of threats
+- Route-table analysis is not yet implemented — that one check always reports `skip`
+- Only reflects Windows Defender's own state — cannot see third-party AV/EDR agents directly
 
 ---
 
-## Demo mode (PR 7)
+## Real signal collection (PR 15)
 
-In the current implementation the engine runs against static demo signals that mirror the
-active SOTY Score preset (Ready, Warn, Exposed, Blocked, or Dirty). No real system calls are
-made. The demo signals match the `host` fields in `sotyDemoInput.ts`:
+Clicking **Run Host Guard** invokes the `run_host_guard_signals` Tauri command, which shells out
+to read-only PowerShell queries and OS APIs — the same pattern already used by the existing
+Doctor page (`system.rs`). No new external crate dependency was added.
 
-| Preset | Expected Host Guard overall |
+| Signal | Command |
 |---|---|
-| Ready | pass |
-| Warn | fail (firewall disabled) |
-| Exposed | pass (host is nominal; route has the problem) |
-| Blocked | pass (host is nominal; scope has the problem) |
-| Dirty | fail (firewall + defender disabled) |
+| Elevation | `is_elevated::is_elevated()` |
+| Firewall | `(Get-NetFirewallProfile).Enabled` |
+| Defender | `Get-MpComputerStatus` → `AntivirusEnabled`, `RealTimeProtectionEnabled` |
+| Proxy | `Get-ItemProperty '...\Internet Settings' -Name ProxyEnable` |
+| Known tunnel process | `Get-Process` → exact match against a known binary list |
 
-Real system signal collection from the Tauri backend is planned for a future PR.
+Any signal the underlying command cannot determine (unsupported platform, cmdlet unavailable,
+process error) returns `null`, which the engine reports as an honest `warn`/`skip` rather than a
+fabricated pass or fail. Outside the packaged Tauri app (e.g. a plain browser preview) the
+command is unavailable entirely — the dashboard shows a clear error instead of crashing.
+
+The rest of the SOTY Score (route/scope/intel/evidence sub-scores) still runs against demo
+presets in `sotyDemoInput.ts` — only Host Guard reads the real local machine so far.
 
 ---
 
 ## Follow-up PRs
 
-- Real system signal collection (Tauri command → `HostGuardInput`) — planned
+- Real route-table analysis (currently `skip` in real mode)
+- Real signal collection for the remaining SOTY Score sub-scores (route, scope, intel, evidence)
 - Integration with `sotyDemoInput` preset switching so SOTY Score reflects Host Guard findings live
-- PR 8: Ethical OSINT Navigator

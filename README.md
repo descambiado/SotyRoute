@@ -8,14 +8,18 @@ SotyRoute Desktop is a **local, demo-ready** control plane for security engineer
 
 Maintained by [@descambiado](https://github.com/descambiado) as part of the **SotyHUB** ecosystem (alongside **BOFA**).
 
-> **Status — PR 1–12 shipped.**
-> The full SOTY direction (PRs 2–12) is implemented and demo-ready.
-> SOTY Score engine · Route Packs · Mission-to-Route Builder · Host Guard ·
-> Ethical OSINT Navigator · Evidence Snapshots · BOFA Gate · SotyHUB Local Exports ·
-> Visual/demo polish.
+> **Status — PR 1–15 shipped.**
+> The full SOTY direction (PRs 2–15) is implemented.
+> SOTY Score engine · Route Packs · Mission-to-Route Builder ·
+> **Host Guard (real, read-only signals from your machine)** ·
+> Ethical OSINT Navigator (35-resource catalog) · Evidence Snapshots · BOFA Gate ·
+> SotyHUB Local Exports · Visual/demo polish · Security dependency maintenance.
 >
-> **Upcoming:** read-only real Host Guard Tauri signals · security dependency updates ·
-> optional SotyHUB sync integration.
+> The SOTY Score itself (route/scope/intel/evidence sub-scores) still runs against demo
+> presets — only Host Guard reads the real local machine so far.
+>
+> **Upcoming:** optional SotyHUB sync integration · real signal collection for the
+> remaining SOTY Score sub-scores.
 >
 > See [docs/roadmap.md](docs/roadmap.md).
 
@@ -169,8 +173,8 @@ Navigate to **`/soty`** in the running app and follow these steps:
 | 1 | Pick a **demo preset** (Soty-Ready / Warn / Exposed / Dirty / Blocked) | SOTY Score ring + state badge updates |
 | 2 | Select a **Route Pack** | Score context syncs; compatible missions appear |
 | 3 | Pick a **mission** and click **Build Mission Route** | Route Card: mode, checks, allowed/disallowed modules, next actions |
-| 4 | Click **Run Host Guard** | 7-check posture panel (demo signals — no real system calls) |
-| 5 | Click **Open OSINT Navigator** | 26-resource authorized catalog; category/risk filters; confirmation gates |
+| 4 | Click **Run Host Guard** | 7-check posture panel — reads real firewall, Defender, proxy and process signals from this machine (read-only) |
+| 5 | Click **Open OSINT Navigator** | 35-resource authorized catalog; category/risk filters; confirmation gates |
 | 6 | Click **Generate Evidence** | Local `SotyEvidenceSnapshot` — JSON/Markdown copy-to-clipboard |
 | 7 | Click **Open BOFA Gate** | Local gate decision (allowed / warning / blocked); module lists |
 | 8 | Click **Prepare BOFA export** + **Prepare SotyHUB export** + **Save exports locally** | `bofa_export.json` + `sotyhub_export.json` written to `~/.sotyroute/runs/` |

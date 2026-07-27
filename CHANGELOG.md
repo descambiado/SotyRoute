@@ -8,6 +8,44 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 15)
+- `apps/desktop/src-tauri/src/host_guard.rs` (NEW) — `collect_host_guard_signals()`: real,
+  read-only host posture signals via PowerShell (`Get-NetFirewallProfile`,
+  `Get-MpComputerStatus`, registry `ProxyEnable`, `Get-Process`) and the existing
+  `is_elevated` crate. No new Cargo dependency — reuses crates already in `Cargo.toml` and the
+  same shell-out pattern as `system.rs`'s `collect_doctor()`. Every signal that cannot be
+  determined returns `None` rather than a fabricated value.
+- `apps/desktop/src-tauri/src/system.rs` — `powershell()` made `pub(crate)` so `host_guard.rs`
+  can reuse it instead of duplicating the PowerShell-invocation helper.
+- `apps/desktop/src-tauri/src/commands.rs` — `run_host_guard_signals` Tauri command.
+- `apps/desktop/src-tauri/src/main.rs` — `run_host_guard_signals` registered in `invoke_handler`.
+- `src/lib/sotyHostGuardReal.ts` (NEW) — `fetchRealHostGuardSignals()` Tauri invoke wrapper,
+  `mapSignalsToHostGuardInput()` mapping real signals into the existing `HostGuardInput` shape.
+- `src/pages/SotyDashboard.tsx` — "Run Host Guard" now calls the real signal path (async, with
+  loading and error states) instead of `DEMO_HOST_GUARD_INPUTS`. Falls back to a clear error
+  message outside the packaged Tauri app rather than crashing. Page copy updated to accurately
+  describe which parts of the dashboard are real (Host Guard) vs. demo (everything else).
+- `src/types/hostGuard.ts` — widened `suspicious_proxy_settings`, `suspicious_route_warning`,
+  and `known_tunnel_process_detected` on `HostGuardInput` to `boolean | null`, so "could not be
+  determined" can be represented honestly instead of defaulting to a fabricated `false`.
+- `src/lib/sotyHostGuardEngine.ts` — the three corresponding check functions now return a
+  `skip` status when their input is `null`, instead of only supporting `pass`/`fail`.
+- `src/lib/osintCatalog.ts` — added 9 additional real, well-known OSINT/security resources
+  (crt.sh, Qualys SSL Labs, ICANN Lookup, Wayback Machine, GreyNoise, PhishTank, Cisco Talos
+  Intelligence, DNSViz, Wappalyzer), all low-risk, matching the existing safety pattern (real
+  URLs, categorized, no scraping, no automation). Catalog grows from 26 to 35 entries
+  (32 real + 3 blocked-by-policy).
+- Tests: `sotyHostGuardReal.test.ts` (6 tests, mapper), `sotyHostGuardMapper.test.ts` (4 tests,
+  regression coverage for the fix below), 6 new tests in `sotyHostGuardEngine.test.ts` for the
+  `skip`-status tri-state handling.
+
+### Fixed (PR 15)
+- `src/lib/sotyHostGuardMapper.ts` — `known_tunnel_process_detected` was computed as
+  `tunnelCheck?.status !== "pass"`, which incorrectly treated an unevaluated (`skip`) check as
+  "a tunnel process was detected." Exposed by adding the `skip` status in this same PR; fixed to
+  `tunnelCheck?.status === "warn"` so "could not determine" never gets scored as a positive
+  finding.
+
 ### Security (PR 14)
 - `apps/desktop/package.json` / `package-lock.json` — upgraded `vite` `^5.0.10` → `^8.1.5` and
   `@vitejs/plugin-react` `^4.2.1` → `^6.0.2` (required in lockstep — `plugin-react@6.x` declares

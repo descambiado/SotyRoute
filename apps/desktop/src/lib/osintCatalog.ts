@@ -212,6 +212,132 @@ export const OSINT_CATALOG: readonly OsintResource[] = [
     relevant_missions: ["open_osint_sources"],
     relevant_pack_ids: ["osint_route", "student_route"],
   },
+  {
+    id: "crt_sh",
+    name: "crt.sh (Certificate Transparency)",
+    url: "https://crt.sh",
+    categories: ["domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Searches public Certificate Transparency logs to enumerate TLS certificates issued for a domain, revealing subdomains and issuance history.",
+    allowed_use:
+      "Authorized subdomain enumeration and certificate history review for infrastructure you own or are authorized to assess.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain", "analyze_ip"],
+    relevant_pack_ids: ["osint_route", "purple_route", "lab_route"],
+  },
+  {
+    id: "ssl_labs",
+    name: "Qualys SSL Labs",
+    url: "https://www.ssllabs.com/ssltest/",
+    categories: ["vulnerability_intelligence", "domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Free TLS/SSL configuration analysis for a public server, including protocol support, cipher strength, and certificate chain validation.",
+    allowed_use:
+      "Assess TLS configuration of domains you own or are authorized to test. Scan results are cached and may be publicly visible.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain", "defensive_workstation_check"],
+    relevant_pack_ids: ["purple_route", "lab_route", "osint_route"],
+  },
+  {
+    id: "icann_lookup",
+    name: "ICANN Lookup",
+    url: "https://lookup.icann.org",
+    categories: ["domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Official global domain WHOIS/RDAP lookup service maintained by ICANN, covering registries beyond ARIN's North America scope.",
+    allowed_use:
+      "Identify domain registration and registrar data for authorized infrastructure review and abuse reporting.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain"],
+    relevant_pack_ids: ["osint_route", "lab_route"],
+  },
+  {
+    id: "wayback_machine",
+    name: "Wayback Machine (archive.org)",
+    url: "https://web.archive.org",
+    categories: ["documentation", "domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Historical snapshots of publicly archived web pages, useful for reviewing a domain's past content and configuration changes over time.",
+    allowed_use:
+      "Review historical public snapshots of domains relevant to authorized investigations. Only publicly archived content is accessible.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain", "open_osint_sources"],
+    relevant_pack_ids: ["osint_route", "purple_route"],
+  },
+  {
+    id: "greynoise",
+    name: "GreyNoise",
+    url: "https://viz.greynoise.io",
+    categories: ["threat_intelligence", "ioc_lookup"],
+    risk: "low",
+    description:
+      "Classifies internet-wide scanning traffic to distinguish mass-scanner/background noise from targeted activity against a given IP.",
+    allowed_use:
+      "Contextualize IP addresses observed in authorized monitoring to separate background internet noise from targeted activity.",
+    requires_confirmation: false,
+    relevant_missions: ["analyze_ip", "investigate_domain"],
+    relevant_pack_ids: ["osint_route", "purple_route"],
+  },
+  {
+    id: "phishtank",
+    name: "PhishTank",
+    url: "https://phishtank.org",
+    categories: ["reporting_abuse", "threat_intelligence"],
+    risk: "low",
+    description:
+      "Community-driven database of verified phishing URLs, with submission and reporting tools.",
+    allowed_use:
+      "Look up and report phishing URLs observed in authorized security monitoring or incident response contexts.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain", "open_osint_sources"],
+    relevant_pack_ids: ["osint_route", "purple_route"],
+  },
+  {
+    id: "talos_intelligence",
+    name: "Cisco Talos Intelligence",
+    url: "https://talosintelligence.com",
+    categories: ["threat_intelligence", "domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Threat intelligence portal with IP/domain reputation lookup, vulnerability research, and daily threat advisories.",
+    allowed_use:
+      "Defensive threat research and IP/domain reputation lookup for authorized monitoring and incident response.",
+    requires_confirmation: false,
+    relevant_missions: ["analyze_ip", "investigate_domain", "open_osint_sources"],
+    relevant_pack_ids: ["osint_route", "purple_route"],
+  },
+  {
+    id: "dnsviz",
+    name: "DNSViz",
+    url: "https://dnsviz.net",
+    categories: ["domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Visual DNS and DNSSEC analysis tool that graphs a domain's delegation chain and flags configuration or signing errors.",
+    allowed_use:
+      "Diagnose DNS/DNSSEC configuration for domains you own or are authorized to assess.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain"],
+    relevant_pack_ids: ["osint_route", "lab_route"],
+  },
+  {
+    id: "wappalyzer",
+    name: "Wappalyzer",
+    url: "https://www.wappalyzer.com/lookup/",
+    categories: ["documentation", "domain_ip_reputation"],
+    risk: "low",
+    description:
+      "Identifies the technology stack (CMS, frameworks, analytics, hosting) used by a public website from its response headers and markup.",
+    allowed_use:
+      "Technology fingerprinting for authorized reconnaissance of infrastructure you own or are explicitly authorized to assess.",
+    requires_confirmation: false,
+    relevant_missions: ["investigate_domain", "open_osint_sources"],
+    relevant_pack_ids: ["osint_route", "purple_route", "student_route"],
+  },
 
   // ─── Medium risk — confirmation modal required ────────────────────────────────
 

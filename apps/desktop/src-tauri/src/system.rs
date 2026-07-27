@@ -243,7 +243,7 @@ fn wg_paths() -> Vec<PathBuf> {
 }
 
 #[cfg(windows)]
-fn powershell(cmd: &str) -> Option<String> {
+pub(crate) fn powershell(cmd: &str) -> Option<String> {
     let output = Command::new("powershell")
         .args([
             "-NoProfile",
@@ -262,7 +262,7 @@ fn powershell(cmd: &str) -> Option<String> {
 }
 
 #[cfg(not(windows))]
-fn powershell(_cmd: &str) -> Option<String> {
+pub(crate) fn powershell(_cmd: &str) -> Option<String> {
     None
 }
 
