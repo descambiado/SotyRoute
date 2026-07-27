@@ -19,15 +19,21 @@ export interface HostGuardCheck {
   detail: string;
 }
 
-/** Raw posture signals fed to the engine. Mirrors SotyScoreInput["host"] minus host_guard_available. */
+/**
+ * Raw posture signals fed to the engine. Mirrors SotyScoreInput["host"] minus
+ * host_guard_available. Every field is nullable: `null` means the signal
+ * could not be determined (e.g. the underlying check is unsupported on this
+ * OS, or not yet implemented) — the engine surfaces that as an honest "skip"
+ * status rather than fabricating a pass or fail.
+ */
 export interface HostGuardInput {
   os_detected: boolean;
   elevated: boolean | null;
   firewall_enabled: boolean | null;
   defender_enabled: boolean | null;
-  suspicious_proxy_settings: boolean;
-  suspicious_route_warning: boolean;
-  known_tunnel_process_detected: boolean;
+  suspicious_proxy_settings: boolean | null;
+  suspicious_route_warning: boolean | null;
+  known_tunnel_process_detected: boolean | null;
 }
 
 export interface HostGuardSummary {

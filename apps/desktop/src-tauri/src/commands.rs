@@ -1,6 +1,7 @@
 use crate::evidence::{
     self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult, SotyExportSaveResult,
 };
+use crate::host_guard::{self, HostGuardSignals};
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
 use crate::system::{self, DoctorReport};
@@ -17,6 +18,14 @@ fn err<E: ToString>(e: E) -> String {
 pub fn run_doctor() -> CmdResult<DoctorReport> {
     let settings = evidence::load_settings();
     Ok(system::collect_doctor(settings.public_ip_check_enabled))
+}
+
+/// Real, read-only host posture signals for the SOTY Dashboard's Host Guard
+/// panel. No system mutation. No external network call. No data leaves the
+/// local process — the result is returned to the UI only.
+#[tauri::command]
+pub fn run_host_guard_signals() -> CmdResult<HostGuardSignals> {
+    Ok(host_guard::collect_host_guard_signals())
 }
 
 #[tauri::command]

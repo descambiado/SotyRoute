@@ -3,6 +3,7 @@
 
 mod commands;
 mod evidence;
+mod host_guard;
 mod planner;
 mod profiles;
 mod system;
@@ -13,6 +14,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             run_doctor,
+            run_host_guard_signals,
             load_profile,
             validate_profile,
             list_example_profiles,

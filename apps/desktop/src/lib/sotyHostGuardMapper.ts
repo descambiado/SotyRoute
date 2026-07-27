@@ -40,6 +40,6 @@ export function hostGuardToHostInput(summary: HostGuardSummary): HostSignals {
     defender_enabled: avCheck?.status === "pass" ? true : avCheck?.status === "fail" ? false : null,
     suspicious_proxy_settings: proxyCheck?.status === "fail",
     suspicious_route_warning: routeCheck?.status === "fail",
-    known_tunnel_process_detected: tunnelCheck?.status !== "pass",
+    known_tunnel_process_detected: tunnelCheck?.status === "warn",
   };
 }

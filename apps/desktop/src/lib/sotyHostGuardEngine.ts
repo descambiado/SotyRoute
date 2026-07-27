@@ -114,6 +114,9 @@ function defenderCheck(input: HostGuardInput): HostGuardCheck {
 
 function suspiciousProxyCheck(input: HostGuardInput): HostGuardCheck {
   const id: HostGuardCheckId = "HG_SUSPICIOUS_PROXY";
+  if (input.suspicious_proxy_settings === null) {
+    return { id, phase: "route", label: "Proxy Settings", status: "skip", detail: "Proxy status could not be determined." };
+  }
   if (!input.suspicious_proxy_settings) {
     return { id, phase: "route", label: "Proxy Settings", status: "pass", detail: "No suspicious proxy settings detected." };
   }
@@ -122,6 +125,9 @@ function suspiciousProxyCheck(input: HostGuardInput): HostGuardCheck {
 
 function suspiciousRouteCheck(input: HostGuardInput): HostGuardCheck {
   const id: HostGuardCheckId = "HG_SUSPICIOUS_ROUTE";
+  if (input.suspicious_route_warning === null) {
+    return { id, phase: "route", label: "Route Table", status: "skip", detail: "Route-table analysis is not yet implemented in real mode." };
+  }
   if (!input.suspicious_route_warning) {
     return { id, phase: "route", label: "Route Table", status: "pass", detail: "No suspicious routing entries detected." };
   }
@@ -130,6 +136,9 @@ function suspiciousRouteCheck(input: HostGuardInput): HostGuardCheck {
 
 function knownTunnelCheck(input: HostGuardInput): HostGuardCheck {
   const id: HostGuardCheckId = "HG_KNOWN_TUNNEL";
+  if (input.known_tunnel_process_detected === null) {
+    return { id, phase: "process", label: "Tunnel Process", status: "skip", detail: "Running process list could not be read." };
+  }
   if (!input.known_tunnel_process_detected) {
     return { id, phase: "process", label: "Tunnel Process", status: "pass", detail: "No known tunnel process detected outside expected configuration." };
   }

@@ -64,6 +64,18 @@ describe("runHostGuard — overall status", () => {
   it("fail takes precedence over warn", () => {
     expect(runHostGuard({ ...CLEAN, firewall_enabled: false, defender_enabled: null }).overall).toBe("fail");
   });
+
+  it("returns pass when suspicious_proxy_settings is null (unknown, no other findings)", () => {
+    expect(runHostGuard({ ...CLEAN, suspicious_proxy_settings: null }).overall).toBe("pass");
+  });
+
+  it("returns pass when suspicious_route_warning is null (unknown, no other findings)", () => {
+    expect(runHostGuard({ ...CLEAN, suspicious_route_warning: null }).overall).toBe("pass");
+  });
+
+  it("returns pass when known_tunnel_process_detected is null (unknown, no other findings)", () => {
+    expect(runHostGuard({ ...CLEAN, known_tunnel_process_detected: null }).overall).toBe("pass");
+  });
 });
 
 // ─── Individual check results ─────────────────────────────────────────────────
@@ -110,6 +122,21 @@ describe("runHostGuard — check results", () => {
   it("HG_KNOWN_TUNNEL is warn when detected", () => {
     const check = runHostGuard({ ...CLEAN, known_tunnel_process_detected: true }).checks.find(c => c.id === "HG_KNOWN_TUNNEL");
     expect(check?.status).toBe("warn");
+  });
+
+  it("HG_SUSPICIOUS_PROXY is skip when null", () => {
+    const check = runHostGuard({ ...CLEAN, suspicious_proxy_settings: null }).checks.find(c => c.id === "HG_SUSPICIOUS_PROXY");
+    expect(check?.status).toBe("skip");
+  });
+
+  it("HG_SUSPICIOUS_ROUTE is skip when null", () => {
+    const check = runHostGuard({ ...CLEAN, suspicious_route_warning: null }).checks.find(c => c.id === "HG_SUSPICIOUS_ROUTE");
+    expect(check?.status).toBe("skip");
+  });
+
+  it("HG_KNOWN_TUNNEL is skip when null", () => {
+    const check = runHostGuard({ ...CLEAN, known_tunnel_process_detected: null }).checks.find(c => c.id === "HG_KNOWN_TUNNEL");
+    expect(check?.status).toBe("skip");
   });
 });
 

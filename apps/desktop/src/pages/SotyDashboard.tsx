@@ -9,8 +9,11 @@
  *       missions, score focus bars, and what the pack does/doesn't do.
  *       Clicking a mission chip builds a Route Card immediately.
  * PR 7: Host Guard posture checks — "Run Host Guard" CTA enabled.
- *       Runs a deterministic read-only engine against demo signals matching
- *       the active preset. No real system checks; no mutations.
+ *       Runs a deterministic read-only engine.
+ * PR 15: Host Guard now reads real, read-only signals from the local
+ *        machine (firewall, Defender, proxy, known tunnel processes,
+ *        elevation) via a Tauri command. No mutations; no external calls.
+ *        Falls back to a clear error state outside the packaged Tauri app.
  * PR 8: Ethical OSINT Navigator — "Open OSINT Navigator" CTA enabled.
  *       Local catalog of authorized defensive resources with category/risk
  *       filters, confirmation gates, and blocked-by-policy cards.
@@ -42,7 +45,8 @@ import { ROUTE_PACK_CONTEXTS } from "../lib/sotyRoutePackContext";
 import { DEFAULT_ROUTE_PACKS } from "../lib/routePackDefaults";
 import type { MissionType, RouteCard } from "../types/routeCard";
 
-import { runHostGuard, DEMO_HOST_GUARD_INPUTS } from "../lib/sotyHostGuardEngine";
+import { runHostGuard } from "../lib/sotyHostGuardEngine";
+import { fetchRealHostGuardSignals, mapSignalsToHostGuardInput } from "../lib/sotyHostGuardReal";
 import type { HostGuardSummary } from "../types/hostGuard";
 import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
 import { buildEvidenceSnapshot } from "../lib/sotyEvidenceBuilder";
@@ -74,6 +78,8 @@ export default function SotyDashboard() {
 
   // ── Host Guard state ─────────────────────────────────────────────────────
   const [hostGuardSummary, setHostGuardSummary] = useState<HostGuardSummary | null>(null);
+  const [hostGuardLoading, setHostGuardLoading] = useState(false);
+  const [hostGuardError, setHostGuardError] = useState<string | null>(null);
   const hostGuardRef = useRef<HTMLDivElement>(null);
 
   // ── OSINT Navigator state ─────────────────────────────────────────────────
@@ -100,17 +106,30 @@ export default function SotyDashboard() {
     setPreset(key);
     setContextNote(null);
     setHostGuardSummary(null);
+    setHostGuardError(null);
     setEvidenceSnapshot(null);
     setBofaGate(null);
     setBofaGateOpen(false);
   }
 
-  function handleRunHostGuard() {
-    const summary = runHostGuard(DEMO_HOST_GUARD_INPUTS[preset]);
-    setHostGuardSummary(summary);
-    setTimeout(() => {
-      hostGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
+  async function handleRunHostGuard() {
+    setHostGuardLoading(true);
+    setHostGuardError(null);
+    try {
+      const signals = await fetchRealHostGuardSignals();
+      const summary = runHostGuard(mapSignalsToHostGuardInput(signals));
+      setHostGuardSummary(summary);
+    } catch {
+      setHostGuardSummary(null);
+      setHostGuardError(
+        "Could not read real host signals. Real Host Guard checks only run inside the packaged Tauri app on Windows."
+      );
+    } finally {
+      setHostGuardLoading(false);
+      setTimeout(() => {
+        hostGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
   }
 
   function handleOpenOsintNavigator() {
@@ -215,9 +234,9 @@ export default function SotyDashboard() {
       {/* ── Safe-mode notice ── */}
       <div className="safe-mode-notice">
         <strong>Local only.</strong>
-        All scoring, routing, posture checks and exports run locally.
-        No real system calls. No external APIs. No network traffic.
-        No BOFA launch. No SotyHUB upload.
+        Host Guard reads real, read-only signals from this machine — everything else on this
+        page runs against demo/simulated data. Nothing here mutates system state.
+        No external APIs. No network traffic. No BOFA launch. No SotyHUB upload.
         Evidence and export files are written to{" "}
         <span className="mono">~/.sotyroute/runs/</span> only.
         For authorized security work only.
@@ -369,9 +388,14 @@ export default function SotyDashboard() {
           <button
             className="btn"
             onClick={handleRunHostGuard}
-            title="Run the Host Guard demo posture check. Reads demo signals only — no real system calls."
+            disabled={hostGuardLoading}
+            title="Read real, read-only host posture signals (firewall, Defender, proxy, tunnel processes, elevation). No mutations, no external calls."
           >
-            {hostGuardSummary ? "Re-run Host Guard" : "Run Host Guard"}
+            {hostGuardLoading
+              ? "Reading host signals…"
+              : hostGuardSummary
+                ? "Re-run Host Guard"
+                : "Run Host Guard"}
           </button>
           <button
             className="btn"
@@ -403,17 +427,20 @@ export default function SotyDashboard() {
       </div>
 
       {/* ── Host Guard panel ── */}
-      {hostGuardSummary && (
+      {(hostGuardSummary || hostGuardError) && (
         <div ref={hostGuardRef} style={{ marginTop: 24 }}>
           <hr className="section-divider" />
           <div className="soty-section-header" style={{ marginBottom: 12 }}>
             <span className="soty-section-step">4</span>
             <h2 className="soty-section-title">Host Guard</h2>
             <span className="soty-section-sub" style={{ fontStyle: "italic" }}>
-              Demo mode — read-only signals, no real system calls
+              Real signals from this machine — read-only, no mutations
             </span>
           </div>
-          <SotyHostGuardPanel summary={hostGuardSummary} />
+          {hostGuardError && (
+            <div className="evidence-save-error">{hostGuardError}</div>
+          )}
+          {hostGuardSummary && <SotyHostGuardPanel summary={hostGuardSummary} />}
         </div>
       )}
 
