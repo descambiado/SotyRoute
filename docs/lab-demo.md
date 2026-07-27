@@ -5,7 +5,7 @@ A safe, end-to-end walkthrough you can run on any Windows machine without modify
 ## Prerequisites
 
 - Windows 10/11.
-- Node.js 18+, Rust stable (`rustup`).
+- Node.js 20.19+ or 22.12+ (required by Vite 8), Rust stable (`rustup`).
 - `apps/desktop` built (`npm run tauri dev` or `npm run tauri build`).
 
 ## Walkthrough
