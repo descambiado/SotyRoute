@@ -84,7 +84,8 @@ fn check_firewall_enabled() -> Option<bool> {
 /// see other vendors' agents.
 #[cfg(windows)]
 fn check_defender_enabled() -> Option<bool> {
-    let cmd = "$s = Get-MpComputerStatus; \"$($s.AntivirusEnabled),$($s.RealTimeProtectionEnabled)\"";
+    let cmd =
+        "$s = Get-MpComputerStatus; \"$($s.AntivirusEnabled),$($s.RealTimeProtectionEnabled)\"";
     let out = powershell(cmd)?;
     let parts: Vec<String> = out
         .trim()
@@ -106,7 +107,8 @@ fn check_defender_enabled() -> Option<bool> {
 /// operator can confirm it is expected before starting a session.
 #[cfg(windows)]
 fn check_proxy_configured() -> Option<bool> {
-    let cmd = "(Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings' -Name ProxyEnable -ErrorAction Stop).ProxyEnable";
+    let cmd =
+        "(Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings' -Name ProxyEnable -ErrorAction Stop).ProxyEnable";
     let out = powershell(cmd)?;
     out.trim().parse::<i32>().ok().map(|v| v != 0)
 }
