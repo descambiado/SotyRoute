@@ -1,35 +1,34 @@
-## Summary
+## What changed
 
-<!-- What does this PR do? One paragraph max. -->
+<!-- One paragraph or a concise bullet list describing the changes in this PR. -->
 
-## Type
+## Why it matters
 
-- [ ] feat — new capability
-- [ ] fix — bug fix
-- [ ] docs — documentation only
-- [ ] chore — build / CI / dependency
-- [ ] refactor — no behaviour change
-- [ ] security — hardening or vulnerability fix
+<!-- The problem this solves or the capability it adds. -->
 
-## Checklist
+## Safety boundaries
+
+<!-- Does this touch network state, system config, evidence schema, or BOFA/SotyHUB contracts?
+     If yes: how is it gated, reversed, or kept additive?
+     If no: state that explicitly (e.g. "UI-only, no system mutations"). -->
+
+## Tests / checks run
 
 - [ ] `tsc --noEmit` passes
-- [ ] `cargo fmt --all -- --check` passes
-- [ ] `cargo clippy -- -D warnings` passes
-- [ ] `cargo build --release` passes
+- [ ] `npm test` passes — N tests
+- [ ] `cargo fmt --all -- --check` passes (if Rust changed)
+- [ ] `cargo clippy -- -D warnings` passes (if Rust changed)
 - [ ] No destructive network operations added without a dry-run gate
-- [ ] Evidence schema changes are additive (or schema version bumped)
-- [ ] BOFA/SotyHUB export schemas remain backward-compatible (or documented breaking change)
-- [ ] Docs updated if behaviour changed
-- [ ] `docs/threat-model.md` still accurate
+- [ ] Evidence / export schema changes are additive (or schema version bumped)
 
-## Testing
+## What is intentionally not included
 
-<!-- How was this tested? For UI changes: which pages, which modes, which flows. -->
+<!-- List anything a reviewer might expect to see but that is deliberately deferred.
+     Helps reviewers distinguish "missing" from "out of scope for this PR". -->
 
-## Safety / reversibility
+## Follow-up PRs
 
-<!-- Does this touch network state? How is it reversed? Is it gated behind dry-run? -->
+<!-- Reference planned follow-on work by PR number or description. -->
 
 ## Related issues
 

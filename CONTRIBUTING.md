@@ -11,7 +11,7 @@ Thank you for your interest. SotyRoute is a serious tool for authorized security
 ## Development setup
 
 ```powershell
-# Prerequisites: Node.js 18+, Rust stable, MS C++ Build Tools, WebView2
+# Prerequisites: Node.js 20.19+ or 22.12+ (Vite 8), Rust stable, MS C++ Build Tools, WebView2
 cd apps/desktop
 npm install
 npm run tauri dev
@@ -66,6 +66,31 @@ fix(backend): handle missing evidence dir gracefully in list_sessions
 docs(threat-model): clarify browser leak limitations
 chore(deps): bump serde_yaml to 0.9.34
 ```
+
+## Repository contribution policy
+
+### Attribution
+
+- Do not add AI assistant signatures, badges, footers or generated-by notices to commits,
+  PR bodies, changelogs or documentation.
+- Do not add `Co-Authored-By` lines for AI tools.
+- Keep all attribution focused on the repository owner and human contributors.
+
+### PR format
+
+Every pull request must follow this structure:
+
+```
+## What changed
+## Why it matters
+## Safety boundaries
+## Tests / checks run
+## What is intentionally not included
+## Follow-up PRs
+```
+
+Omit sections that genuinely do not apply (e.g. a docs-only PR may have no safety section),
+but do not replace the structure with an unformatted wall of text.
 
 ## Security contributions
 

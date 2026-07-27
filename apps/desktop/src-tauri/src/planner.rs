@@ -118,7 +118,8 @@ fn plan_wireguard(p: &Profile) -> Plan {
         steps: vec![
             PlanStep {
                 step: "detect_wireguard".into(),
-                detail: "Check for the WireGuard for Windows installation in Program Files / PATH.".into(),
+                detail: "Check for the WireGuard for Windows installation in Program Files / PATH."
+                    .into(),
                 reversible: true,
                 executes_in_v0_1_0: true,
             },
@@ -130,7 +131,9 @@ fn plan_wireguard(p: &Profile) -> Plan {
             },
             PlanStep {
                 step: "describe_tunnel_orchestration".into(),
-                detail: "Describe up/down sequence including reversible kill-switch firewall rules.".into(),
+                detail:
+                    "Describe up/down sequence including reversible kill-switch firewall rules."
+                        .into(),
                 reversible: true,
                 executes_in_v0_1_0: false,
             },
@@ -171,7 +174,9 @@ fn plan_socks5(p: &Profile) -> Plan {
             },
             PlanStep {
                 step: "describe_app_configuration".into(),
-                detail: "Document which per-application SOCKS5 settings would need to be configured.".into(),
+                detail:
+                    "Document which per-application SOCKS5 settings would need to be configured."
+                        .into(),
                 reversible: true,
                 executes_in_v0_1_0: false,
             },

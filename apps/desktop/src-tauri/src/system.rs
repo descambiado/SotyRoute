@@ -24,15 +24,28 @@ pub struct DoctorReport {
     pub tor_hint: String,
     pub wireguard_installed: bool,
     pub wireguard_hint: String,
+    /// Present only when `public_ip_check_enabled` is true in settings.
+    /// Contains the operator's public egress IP as seen by an external probe,
+    /// or an error string prefixed with "error:" if the request failed.
+    pub public_ip: Option<String>,
     pub generated_at: String,
 }
 
-pub fn collect_doctor() -> DoctorReport {
+/// Collect a full doctor report. Pass `enable_public_ip = true` (from
+/// `AppSettings::public_ip_check_enabled`) to include the egress IP check.
+/// The flag is threaded in from `commands.rs` to avoid a circular module
+/// dependency between `system` and `evidence`.
+pub fn collect_doctor(enable_public_ip: bool) -> DoctorReport {
     let (os_name, os_version) = os_info();
     let interfaces = list_interfaces();
     let dns_servers = list_dns_servers();
     let (tor_installed, tor_hint) = detect_tor();
     let (wireguard_installed, wireguard_hint) = detect_wireguard();
+    let public_ip = if enable_public_ip {
+        Some(fetch_public_ip())
+    } else {
+        None
+    };
 
     DoctorReport {
         os_name,
@@ -46,7 +59,35 @@ pub fn collect_doctor() -> DoctorReport {
         tor_hint,
         wireguard_installed,
         wireguard_hint,
+        public_ip,
         generated_at: Utc::now().to_rfc3339(),
+    }
+}
+
+/// Fetch the operator's public egress IP using a platform-native HTTP call.
+/// Returns the IP string on success, or "error: <reason>" on failure.
+/// Uses no extra crate dependencies — delegates to PowerShell on Windows,
+/// curl on Linux/macOS.
+fn fetch_public_ip() -> String {
+    #[cfg(windows)]
+    {
+        let cmd = "(Invoke-WebRequest -Uri 'https://api.ipify.org' \
+                   -UseBasicParsing -TimeoutSec 5).Content.Trim()";
+        powershell(cmd)
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| "error: PowerShell request failed".into())
+    }
+    #[cfg(not(windows))]
+    {
+        let out = Command::new("curl")
+            .args(["-s", "--connect-timeout", "5", "https://api.ipify.org"])
+            .output();
+        match out {
+            Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).trim().to_string(),
+            Ok(_) => "error: curl returned non-zero exit".into(),
+            Err(e) => format!("error: {}", e),
+        }
     }
 }
 
@@ -61,46 +102,40 @@ fn os_info() -> (String, String) {
     }
     #[cfg(not(windows))]
     {
-        (
-            format!("{:?}", whoami::platform()),
-            whoami::distro(),
-        )
+        (format!("{:?}", whoami::platform()), whoami::distro())
     }
 }
 
 fn list_interfaces() -> Vec<NetworkInterface> {
     let mut out: Vec<NetworkInterface> = Vec::new();
-    match if_addrs::get_if_addrs() {
-        Ok(list) => {
-            // Group by interface name; if_addrs returns one entry per address.
-            use std::collections::BTreeMap;
-            let mut by_name: BTreeMap<String, NetworkInterface> = BTreeMap::new();
-            for entry in list {
-                let name = entry.name.clone();
-                let addr = entry.addr.ip().to_string();
-                let is_loopback = entry.is_loopback();
-                by_name
-                    .entry(name.clone())
-                    .and_modify(|nif| {
-                        if !nif.addresses.contains(&addr) {
-                            nif.addresses.push(addr.clone());
-                        }
-                    })
-                    .or_insert_with(|| NetworkInterface {
-                        name: name.clone(),
-                        description: if is_loopback {
-                            "Loopback".into()
-                        } else {
-                            String::new()
-                        },
-                        addresses: vec![addr],
-                        // if_addrs only reports interfaces that have an address, so they are "up".
-                        is_up: true,
-                    });
-            }
-            out = by_name.into_values().collect();
+    if let Ok(list) = if_addrs::get_if_addrs() {
+        // Group by interface name; if_addrs returns one entry per address.
+        use std::collections::BTreeMap;
+        let mut by_name: BTreeMap<String, NetworkInterface> = BTreeMap::new();
+        for entry in list {
+            let name = entry.name.clone();
+            let addr = entry.addr.ip().to_string();
+            let is_loopback = entry.is_loopback();
+            by_name
+                .entry(name.clone())
+                .and_modify(|nif| {
+                    if !nif.addresses.contains(&addr) {
+                        nif.addresses.push(addr.clone());
+                    }
+                })
+                .or_insert_with(|| NetworkInterface {
+                    name: name.clone(),
+                    description: if is_loopback {
+                        "Loopback".into()
+                    } else {
+                        String::new()
+                    },
+                    addresses: vec![addr],
+                    // if_addrs only reports interfaces that have an address, so they are "up".
+                    is_up: true,
+                });
         }
-        Err(_) => {}
+        out = by_name.into_values().collect();
     }
     out
 }
@@ -126,10 +161,7 @@ fn list_dns_servers() -> Vec<String> {
 fn detect_tor() -> (bool, String) {
     let candidates = tor_paths();
     if let Some(p) = candidates.iter().find(|p| p.exists()) {
-        return (
-            true,
-            format!("Detected at {}", p.display()),
-        );
+        return (true, format!("Detected at {}", p.display()));
     }
     if where_exists("tor.exe") {
         return (true, "Detected via PATH (tor.exe).".into());
@@ -143,14 +175,43 @@ fn detect_tor() -> (bool, String) {
 fn tor_paths() -> Vec<PathBuf> {
     let mut v = Vec::new();
     if let Some(profile) = dirs::home_dir() {
-        v.push(profile.join("Desktop").join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
-        v.push(profile.join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
+        v.push(
+            profile
+                .join("Desktop")
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
+        v.push(
+            profile
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
     }
     if let Ok(pf) = std::env::var("ProgramFiles") {
-        v.push(PathBuf::from(&pf).join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
+        v.push(
+            PathBuf::from(&pf)
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
     }
     if let Ok(pf86) = std::env::var("ProgramFiles(x86)") {
-        v.push(PathBuf::from(&pf86).join("Tor Browser").join("Browser").join("TorBrowser").join("Tor").join("tor.exe"));
+        v.push(
+            PathBuf::from(&pf86)
+                .join("Tor Browser")
+                .join("Browser")
+                .join("TorBrowser")
+                .join("Tor")
+                .join("tor.exe"),
+        );
     }
     v.push(PathBuf::from(r"C:\Tor\tor.exe"));
     v
@@ -159,10 +220,7 @@ fn tor_paths() -> Vec<PathBuf> {
 fn detect_wireguard() -> (bool, String) {
     let candidates = wg_paths();
     if let Some(p) = candidates.iter().find(|p| p.exists()) {
-        return (
-            true,
-            format!("Detected at {}", p.display()),
-        );
+        return (true, format!("Detected at {}", p.display()));
     }
     if where_exists("wireguard.exe") || where_exists("wg.exe") {
         return (true, "Detected via PATH.".into());
@@ -185,7 +243,7 @@ fn wg_paths() -> Vec<PathBuf> {
 }
 
 #[cfg(windows)]
-fn powershell(cmd: &str) -> Option<String> {
+pub(crate) fn powershell(cmd: &str) -> Option<String> {
     let output = Command::new("powershell")
         .args([
             "-NoProfile",
@@ -204,7 +262,7 @@ fn powershell(cmd: &str) -> Option<String> {
 }
 
 #[cfg(not(windows))]
-fn powershell(_cmd: &str) -> Option<String> {
+pub(crate) fn powershell(_cmd: &str) -> Option<String> {
     None
 }
 

@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
+import SotyDashboard from "./pages/SotyDashboard";
 import Profiles from "./pages/Profiles";
 import Evidence from "./pages/Evidence";
 import Doctor from "./pages/Doctor";
@@ -14,6 +15,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/soty" element={<SotyDashboard />} />
           <Route path="/profiles" element={<Profiles />} />
           <Route path="/evidence" element={<Evidence />} />
           <Route path="/doctor" element={<Doctor />} />
