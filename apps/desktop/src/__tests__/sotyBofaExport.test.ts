@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { buildBofaExportPayload, renderBofaExportJson } from "../lib/sotyBofaExport";
 import { buildBofaGateDecision } from "../lib/sotyBofaGate";
 import type { SotyEvidenceSnapshot } from "../types/sotyEvidence";
@@ -216,9 +216,18 @@ describe("renderBofaExportJson", () => {
   });
 
   it("is deterministic for the same inputs", () => {
+    // buildBofaExportPayload stamps its own generated_at with `new Date()`,
+    // so the clock must be frozen — otherwise this flakes if the two calls
+    // straddle a millisecond boundary.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(FIXED_TS));
     const gate = buildBofaGateDecision(SCORE, PACK, SNAPSHOT.id, { timestamp: FIXED_TS });
     const payload1 = buildBofaExportPayload(gate, SNAPSHOT);
     const payload2 = buildBofaExportPayload(gate, SNAPSHOT);
     expect(renderBofaExportJson(payload1)).toBe(renderBofaExportJson(payload2));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 });
