@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   buildSotyhubExportPayload,
   renderSotyhubExportJson,
@@ -276,9 +276,18 @@ describe("renderSotyhubExportJson", () => {
   });
 
   it("is deterministic for the same inputs", () => {
+    // buildSotyhubExportPayload stamps its own generated_at with `new Date()`,
+    // so the clock must be frozen — otherwise this flakes if the two calls
+    // straddle a millisecond boundary.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(FIXED_TS));
     const gate = buildBofaGateDecision(SCORE, PACK, SNAPSHOT.id, { timestamp: FIXED_TS });
     const p1 = buildSotyhubExportPayload(gate, SNAPSHOT);
     const p2 = buildSotyhubExportPayload(gate, SNAPSHOT);
     expect(renderSotyhubExportJson(p1)).toBe(renderSotyhubExportJson(p2));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 });
