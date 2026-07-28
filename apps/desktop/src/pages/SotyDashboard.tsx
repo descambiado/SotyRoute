@@ -19,6 +19,12 @@
  *        and sub-score grid now recompute live from real Host/Route
  *        signals once their checks have run this session, instead of
  *        only ever showing the static demo result for those categories.
+ * PR 20: Intel sub-score now reflects real Route Pack selection and OSINT
+ *        Navigator category/risk filter state once the operator has
+ *        touched either control this session (falls back to the demo
+ *        preset until then, so the showcase presets stay intact on first
+ *        load). blocked_resource_requested is always real — the catalog
+ *        UI has no code path to request a blocked-by-policy resource.
  * PR 8: Ethical OSINT Navigator — "Open OSINT Navigator" CTA enabled.
  *       Local catalog of authorized defensive resources with category/risk
  *       filters, confirmation gates, and blocked-by-policy cards.
@@ -62,6 +68,8 @@ import {
   type RouteGuardSignals,
 } from "../lib/sotyRouteGuardReal";
 import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
+import { mapIntelToScoreInput } from "../lib/sotyIntelReal";
+import type { OsintFilterState } from "../types/osintNavigator";
 import { buildEvidenceSnapshot } from "../lib/sotyEvidenceBuilder";
 import type { SotyEvidenceSnapshot } from "../types/sotyEvidence";
 import SotyEvidencePanel from "../components/soty/SotyEvidencePanel";
@@ -88,6 +96,12 @@ export default function SotyDashboard() {
 
   // ── Route pack selection ─────────────────────────────────────────────────
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+  /** True once the operator has touched Route Pack selection at least once this session (PR 20). */
+  const [routePackTouched, setRoutePackTouched] = useState(false);
+
+  // ── OSINT Navigator filter state (PR 20) ─────────────────────────────────
+  /** Null until the Navigator has mounted and reported its filters at least once. */
+  const [osintFilters, setOsintFilters] = useState<OsintFilterState | null>(null);
 
   // ── Host Guard state ─────────────────────────────────────────────────────
   const [hostGuardSummary, setHostGuardSummary] = useState<HostGuardSummary | null>(null);
@@ -198,6 +212,8 @@ export default function SotyDashboard() {
   }
 
   function handlePackSelect(packId: string) {
+    setRoutePackTouched(true);
+
     // Toggle off if re-clicking the same pack
     if (packId === selectedPackId) {
       setSelectedPackId(null);
@@ -257,8 +273,9 @@ export default function SotyDashboard() {
 
   // Live score: starts from the selected demo preset's input, then overrides
   // route/host with real signals once their real checks have run this
-  // session. Everything else (scope/intel/evidence) still runs on demo
-  // data until a future PR wires real signals for those categories too.
+  // session, and intel with real Route Pack / OSINT Navigator interaction
+  // once touched. Scope/Evidence still run on demo data until a future PR
+  // wires real signals for those categories too.
   const scoreInput = {
     ...DEMO_SCORE_INPUTS[preset],
     route: routeGuardSignals
@@ -267,6 +284,11 @@ export default function SotyDashboard() {
     host: hostGuardSummary
       ? hostGuardToHostInput(hostGuardSummary)
       : DEMO_SCORE_INPUTS[preset].host,
+    intel: mapIntelToScoreInput(DEMO_SCORE_INPUTS[preset].intel, {
+      routePackTouched,
+      selectedPackId,
+      osintFilters,
+    }),
   };
   const score = computeSotyScore(scoreInput, {
     profileName: DEMO_PRESET_PROFILE_NAMES[preset],
@@ -289,9 +311,9 @@ export default function SotyDashboard() {
       {/* ── Safe-mode notice ── */}
       <div className="safe-mode-notice">
         <strong>Local only.</strong>
-        Host Guard and Route Guard read real, read-only signals from this machine and feed the
-        Score above — everything else on this page still runs against demo/simulated data.
-        Nothing here mutates system state.
+        Host Guard and Route Guard read real, read-only signals from this machine, and your
+        Route Pack / OSINT Navigator selections feed the Score above — everything else on this
+        page still runs against demo/simulated data. Nothing here mutates system state.
         No external APIs. No network traffic. No BOFA launch. No SotyHUB upload.
         Evidence and export files are written to{" "}
         <span className="mono">~/.sotyroute/runs/</span> only.
@@ -633,7 +655,15 @@ export default function SotyDashboard() {
               Close
             </button>
           </div>
-          <SotyOsintNavigator selectedPackId={selectedPackId} />
+          <SotyOsintNavigator
+            selectedPackId={selectedPackId}
+            onFiltersChange={setOsintFilters}
+          />
+          <p className="muted" style={{ marginTop: 12, fontSize: 11.5 }}>
+            Category and risk filter selections above now feed the Intel sub-score. Whether your
+            own browser or OSINT tools log queries externally is not something SotyRoute can
+            observe — that stays demo-based until a future PR adds an explicit confirmation.
+          </p>
         </div>
       )}
     </div>

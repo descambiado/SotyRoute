@@ -317,7 +317,38 @@ state, Intel needs live Route Pack/OSINT Navigator selection state, and Evidence
 whether a snapshot was actually generated/saved this session — none of these require new external
 calls, all are wiring work against state that already exists in the app.
 
-## 11. Roadmap position
+## 12. PR 20 — real Intel signals (Route Pack + OSINT Navigator)
+
+Intel turned out to need no new system signal at all — Route Pack selection and OSINT Navigator
+category/risk filters were already real, in-memory UI state on `SotyDashboard.tsx`; the score
+input just never read them.
+
+- `src/components/soty/SotyOsintNavigator.tsx` — new optional `onFiltersChange` prop, reported via
+  `useEffect` on every filter change, so the dashboard can read the Navigator's live
+  `OsintFilterState` without the Navigator needing to know about scoring.
+- `src/lib/sotyIntelReal.ts` (NEW) — `mapIntelToScoreInput()`:
+  - `route_pack_selected` / `osint_categories_selected` / `high_risk_resource_enabled` fall back to
+    the demo preset's value until the operator has actually touched the corresponding control this
+    session (Route Pack selection, or the OSINT Navigator's filters), then reflect the real state
+    from then on — including a real `false` if that's what the operator's own selection means. This
+    mirrors the Host/Route Guard precedent of only overriding once positive evidence exists, so the
+    showcase demo presets (e.g. `SOTY_READY`) aren't degraded just because the page loaded and
+    nothing has been clicked yet.
+  - `blocked_resource_requested` is always real `false`, unconditionally — `OsintResourceCard.tsx`
+    renders blocked-risk resources as a static "Blocked by policy" badge with no click handler at
+    all, so there is no code path by which one could ever be requested. This is a structural
+    guarantee verified by reading the component, not a demo guess.
+  - `query_logging_disabled` always passes through the demo value. The deduction it backs
+    (`INTEL_QUERY_LOGGING`) asks whether the *operator's own browser or OSINT tools* log queries
+    externally — that is outside anything SotyRoute itself can observe, so it stays manual/demo
+    until a future PR adds an explicit operator attestation control, the same treatment already
+    given to `dns_matches_profile` in §10.
+- `src/pages/SotyDashboard.tsx` — new `routePackTouched` and `osintFilters` state; `scoreInput`
+  composition extended with a live `intel` override alongside the existing `route`/`host` ones.
+
+Scope and Evidence remain the last two demo-based sub-scores.
+
+## 13. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions. ✓ Done
 - **PR 3** — deterministic scoring engine. ✓ Done
@@ -330,6 +361,7 @@ calls, all are wiring work against state that already exists in the app.
 - **PR 10** — BOFA Gate and export extension. ✓ Done
 - **PR 15** — Host Guard reads real signals. ✓ Done
 - **PR 19** — Route Guard reads real signals; Host + Route now feed the live Score. ✓ Done
-- **Follow-up** — real signals for Scope, Intel, and Evidence sub-scores.
+- **PR 20** — Intel reads real Route Pack/OSINT Navigator selection state. ✓ Done
+- **Follow-up** — real signals for Scope and Evidence sub-scores.
 
 See [docs/roadmap.md](roadmap.md).

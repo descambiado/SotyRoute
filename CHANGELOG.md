@@ -8,6 +8,25 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 20)
+- `apps/desktop/src/components/soty/SotyOsintNavigator.tsx` — new optional `onFiltersChange`
+  prop, reported via `useEffect` on every category/risk filter change.
+- `apps/desktop/src/lib/sotyIntelReal.ts` (NEW) — `mapIntelToScoreInput()` maps real Route Pack
+  selection and OSINT Navigator filter state into `SotyScoreInput["intel"]`. No new system
+  signal needed — this state already existed in `SotyDashboard.tsx`, just wasn't read by the
+  score. `route_pack_selected` / `osint_categories_selected` / `high_risk_resource_enabled` fall
+  back to the demo preset until the operator has touched the corresponding control this session
+  (preserving the showcase presets on first load), then reflect the real state.
+  `blocked_resource_requested` is always real `false` — blocked-risk resources render with no
+  click handler at all, so there is no code path to request one. `query_logging_disabled` stays
+  demo-based — it asks about the operator's own browser/tools, which SotyRoute cannot observe.
+- `apps/desktop/src/pages/SotyDashboard.tsx` — new `routePackTouched` and `osintFilters` state;
+  live `intel` override added to the score composition alongside the existing `route`/`host`
+  ones. Safe-mode notice updated to mention Route Pack/OSINT selections feed the Score.
+- Tests: `sotyIntelReal.test.ts` (9 tests) covering the touched-gating behavior and all 5 field
+  mappings.
+- `docs/soty-score.md` — new §12 documenting the PR 20 wiring; updated roadmap (§13).
+
 ### Added (PR 19)
 - `apps/desktop/src-tauri/src/route_guard.rs` (NEW) — `collect_route_guard_signals()`: real,
   read-only route posture signals. Reuses `system::collect_doctor()` for DNS servers and
