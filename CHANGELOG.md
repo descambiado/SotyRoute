@@ -8,6 +8,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 18)
+- `apps/desktop/package.json` — upgraded `react` and `react-dom` together, `^18.2.0` → `^19.2.7`
+  (with matching `@types/react`/`@types/react-dom` bumps). React and React DOM must always be
+  the same major version — Dependabot had opened these as two separate single-package PRs
+  (#31 bumping only `react`, #28 bumping only `react-dom`), which would produce a broken
+  mismatched pair if merged independently. This PR bumps both together correctly; #31 and #28
+  should be closed as superseded once this merges.
+- Verified zero risky patterns before attempting the bump: no `forwardRef`, no `defaultProps`,
+  no `PropTypes`, no legacy string refs, no legacy Context API, and `main.tsx` already uses
+  `ReactDOM.createRoot()` (not the removed legacy `ReactDOM.render()`).
+- Verified: `npm test` (604/604), `npx tsc --noEmit` (clean), `npm run build` (production build
+  succeeded), manual dev-server smoke test (preset switching triggers correct re-render,
+  100/100 → 93/100, zero console errors).
+
 ### Added (PR 15)
 - `apps/desktop/src-tauri/src/host_guard.rs` (NEW) — `collect_host_guard_signals()`: real,
   read-only host posture signals via PowerShell (`Get-NetFirewallProfile`,
