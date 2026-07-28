@@ -106,14 +106,14 @@ fn check_defender_enabled() -> Option<bool> {
 /// A configured proxy is not inherently malicious — it is surfaced so the
 /// operator can confirm it is expected before starting a session.
 #[cfg(windows)]
-fn check_proxy_configured() -> Option<bool> {
+pub(crate) fn check_proxy_configured() -> Option<bool> {
     let cmd =
         "(Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings' -Name ProxyEnable -ErrorAction Stop).ProxyEnable";
     let out = powershell(cmd)?;
     out.trim().parse::<i32>().ok().map(|v| v != 0)
 }
 #[cfg(not(windows))]
-fn check_proxy_configured() -> Option<bool> {
+pub(crate) fn check_proxy_configured() -> Option<bool> {
     None
 }
 
@@ -121,7 +121,7 @@ fn check_proxy_configured() -> Option<bool> {
 /// Detecting a known tunnel client is a neutral/informational signal, not
 /// necessarily a problem — the operator may be intentionally running one.
 #[cfg(windows)]
-fn check_known_tunnel_process() -> Option<bool> {
+pub(crate) fn check_known_tunnel_process() -> Option<bool> {
     let out = powershell("(Get-Process | Select-Object -ExpandProperty ProcessName) -join ','")?;
     let names: Vec<String> = out
         .trim()
@@ -139,6 +139,6 @@ fn check_known_tunnel_process() -> Option<bool> {
     )
 }
 #[cfg(not(windows))]
-fn check_known_tunnel_process() -> Option<bool> {
+pub(crate) fn check_known_tunnel_process() -> Option<bool> {
     None
 }

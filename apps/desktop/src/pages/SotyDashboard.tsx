@@ -14,6 +14,11 @@
  *        machine (firewall, Defender, proxy, known tunnel processes,
  *        elevation) via a Tauri command. No mutations; no external calls.
  *        Falls back to a clear error state outside the packaged Tauri app.
+ * PR 19: Route Guard reads real, read-only route signals (DNS, tunnel
+ *        process, proxy, route table availability). The SOTY Score ring
+ *        and sub-score grid now recompute live from real Host/Route
+ *        signals once their checks have run this session, instead of
+ *        only ever showing the static demo result for those categories.
  * PR 8: Ethical OSINT Navigator — "Open OSINT Navigator" CTA enabled.
  *       Local catalog of authorized defensive resources with category/risk
  *       filters, confirmation gates, and blocked-by-policy cards.
@@ -34,11 +39,13 @@
  */
 import { useState, useRef } from "react";
 import {
-  DEMO_PRESETS,
+  DEMO_SCORE_INPUTS,
+  DEMO_PRESET_PROFILE_NAMES,
   DEMO_PRESET_KEYS,
   DEMO_PRESET_LABELS,
   type DemoPresetKey,
 } from "../lib/sotyDemoInput";
+import { computeSotyScore } from "../lib/sotyScoreEngine";
 import { buildRouteCard } from "../lib/sotyRouteBuilder";
 import { getPackDemoPreset } from "../lib/sotyRoutePackScoring";
 import { ROUTE_PACK_CONTEXTS } from "../lib/sotyRoutePackContext";
@@ -47,7 +54,13 @@ import type { MissionType, RouteCard } from "../types/routeCard";
 
 import { runHostGuard } from "../lib/sotyHostGuardEngine";
 import { fetchRealHostGuardSignals, mapSignalsToHostGuardInput } from "../lib/sotyHostGuardReal";
+import { hostGuardToHostInput } from "../lib/sotyHostGuardMapper";
 import type { HostGuardSummary } from "../types/hostGuard";
+import {
+  fetchRealRouteGuardSignals,
+  mapRouteSignalsToScoreInput,
+  type RouteGuardSignals,
+} from "../lib/sotyRouteGuardReal";
 import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
 import { buildEvidenceSnapshot } from "../lib/sotyEvidenceBuilder";
 import type { SotyEvidenceSnapshot } from "../types/sotyEvidence";
@@ -82,6 +95,12 @@ export default function SotyDashboard() {
   const [hostGuardError, setHostGuardError] = useState<string | null>(null);
   const hostGuardRef = useRef<HTMLDivElement>(null);
 
+  // ── Route Guard state (PR 19) ────────────────────────────────────────────
+  const [routeGuardSignals, setRouteGuardSignals] = useState<RouteGuardSignals | null>(null);
+  const [routeGuardLoading, setRouteGuardLoading] = useState(false);
+  const [routeGuardError, setRouteGuardError] = useState<string | null>(null);
+  const routeGuardRef = useRef<HTMLDivElement>(null);
+
   // ── OSINT Navigator state ─────────────────────────────────────────────────
   const [osintOpen, setOsintOpen] = useState(false);
   const osintRef = useRef<HTMLDivElement>(null);
@@ -105,8 +124,9 @@ export default function SotyDashboard() {
   function handlePresetChange(key: DemoPresetKey) {
     setPreset(key);
     setContextNote(null);
-    setHostGuardSummary(null);
-    setHostGuardError(null);
+    // Real Host/Route Guard signals reflect this machine, not the demo
+    // scenario — they intentionally persist across preset changes so a
+    // real check result is never silently discarded by clicking a preset.
     setEvidenceSnapshot(null);
     setBofaGate(null);
     setBofaGateOpen(false);
@@ -128,6 +148,25 @@ export default function SotyDashboard() {
       setHostGuardLoading(false);
       setTimeout(() => {
         hostGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+  }
+
+  async function handleRunRouteGuard() {
+    setRouteGuardLoading(true);
+    setRouteGuardError(null);
+    try {
+      const signals = await fetchRealRouteGuardSignals();
+      setRouteGuardSignals(signals);
+    } catch {
+      setRouteGuardSignals(null);
+      setRouteGuardError(
+        "Could not read real route signals. Real Route Guard checks only run inside the packaged Tauri app on Windows."
+      );
+    } finally {
+      setRouteGuardLoading(false);
+      setTimeout(() => {
+        routeGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 50);
     }
   }
@@ -209,13 +248,29 @@ export default function SotyDashboard() {
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const score = DEMO_PRESETS[preset];
   const selectedPack = selectedPackId
     ? (DEFAULT_ROUTE_PACKS.find((p) => p.id === selectedPackId) ?? null)
     : null;
   const selectedPackContext = selectedPackId
     ? (ROUTE_PACK_CONTEXTS[selectedPackId] ?? null)
     : null;
+
+  // Live score: starts from the selected demo preset's input, then overrides
+  // route/host with real signals once their real checks have run this
+  // session. Everything else (scope/intel/evidence) still runs on demo
+  // data until a future PR wires real signals for those categories too.
+  const scoreInput = {
+    ...DEMO_SCORE_INPUTS[preset],
+    route: routeGuardSignals
+      ? mapRouteSignalsToScoreInput(routeGuardSignals, selectedPack)
+      : DEMO_SCORE_INPUTS[preset].route,
+    host: hostGuardSummary
+      ? hostGuardToHostInput(hostGuardSummary)
+      : DEMO_SCORE_INPUTS[preset].host,
+  };
+  const score = computeSotyScore(scoreInput, {
+    profileName: DEMO_PRESET_PROFILE_NAMES[preset],
+  });
 
   return (
     <div>
@@ -234,8 +289,9 @@ export default function SotyDashboard() {
       {/* ── Safe-mode notice ── */}
       <div className="safe-mode-notice">
         <strong>Local only.</strong>
-        Host Guard reads real, read-only signals from this machine — everything else on this
-        page runs against demo/simulated data. Nothing here mutates system state.
+        Host Guard and Route Guard read real, read-only signals from this machine and feed the
+        Score above — everything else on this page still runs against demo/simulated data.
+        Nothing here mutates system state.
         No external APIs. No network traffic. No BOFA launch. No SotyHUB upload.
         Evidence and export files are written to{" "}
         <span className="mono">~/.sotyroute/runs/</span> only.
@@ -399,6 +455,18 @@ export default function SotyDashboard() {
           </button>
           <button
             className="btn"
+            onClick={handleRunRouteGuard}
+            disabled={routeGuardLoading}
+            title="Read real, read-only route posture signals (DNS, tunnel process, proxy, route table). No mutations, no external calls."
+          >
+            {routeGuardLoading
+              ? "Reading route signals…"
+              : routeGuardSignals
+                ? "Re-run Route Guard"
+                : "Run Route Guard"}
+          </button>
+          <button
+            className="btn"
             onClick={handleOpenOsintNavigator}
             title="Open the Ethical OSINT Navigator — local authorized resource catalog. No external API calls."
           >
@@ -441,6 +509,62 @@ export default function SotyDashboard() {
             <div className="evidence-save-error">{hostGuardError}</div>
           )}
           {hostGuardSummary && <SotyHostGuardPanel summary={hostGuardSummary} />}
+        </div>
+      )}
+
+      {/* ── Route Guard panel (PR 19) ── */}
+      {(routeGuardSignals || routeGuardError) && (
+        <div ref={routeGuardRef} style={{ marginTop: 24 }}>
+          <hr className="section-divider" />
+          <div className="soty-section-header" style={{ marginBottom: 12 }}>
+            <h2 className="soty-section-title">Route Guard</h2>
+            <span className="soty-section-sub" style={{ fontStyle: "italic" }}>
+              Real signals from this machine — read-only, feeds the Route sub-score above
+            </span>
+          </div>
+          {routeGuardError && (
+            <div className="evidence-save-error">{routeGuardError}</div>
+          )}
+          {routeGuardSignals && (
+            <div className="evidence-panel">
+              <div className="evidence-kv">
+                <span className="evidence-k">DNS servers</span>
+                <span className="evidence-v">
+                  {routeGuardSignals.dns_servers.length > 0
+                    ? routeGuardSignals.dns_servers.join(", ")
+                    : "none detected"}
+                </span>
+                <span className="evidence-k">Public IP</span>
+                <span className="evidence-v">
+                  {routeGuardSignals.public_ip ?? "not checked (enable in Settings to include)"}
+                </span>
+                <span className="evidence-k">Tunnel installed</span>
+                <span className="evidence-v">{routeGuardSignals.tunnel_installed ? "yes" : "no"}</span>
+                <span className="evidence-k">Tunnel process running</span>
+                <span className="evidence-v">
+                  {routeGuardSignals.tunnel_process_running === null
+                    ? "could not be determined"
+                    : routeGuardSignals.tunnel_process_running
+                      ? "yes"
+                      : "no"}
+                </span>
+                <span className="evidence-k">System proxy configured</span>
+                <span className="evidence-v">
+                  {routeGuardSignals.proxy_configured === null
+                    ? "could not be determined"
+                    : routeGuardSignals.proxy_configured
+                      ? "yes"
+                      : "no"}
+                </span>
+                <span className="evidence-k">Route table readable</span>
+                <span className="evidence-v">{routeGuardSignals.route_table_available ? "yes" : "no"}</span>
+              </div>
+              <p className="muted" style={{ marginTop: 12, fontSize: 11.5 }}>
+                DNS-profile matching, IPv6 leak detection, and kill-switch state are not yet
+                implemented in real mode — those signals stay demo-based until a future PR.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

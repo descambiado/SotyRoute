@@ -4,6 +4,7 @@ use crate::evidence::{
 use crate::host_guard::{self, HostGuardSignals};
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
+use crate::route_guard::{self, RouteGuardSignals};
 use crate::system::{self, DoctorReport};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
@@ -26,6 +27,18 @@ pub fn run_doctor() -> CmdResult<DoctorReport> {
 #[tauri::command]
 pub fn run_host_guard_signals() -> CmdResult<HostGuardSignals> {
     Ok(host_guard::collect_host_guard_signals())
+}
+
+/// Real, read-only route posture signals for the SOTY Dashboard's Route
+/// score. The public-IP lookup only runs if the operator has already
+/// enabled `public_ip_check_enabled` in Settings — the same existing
+/// opt-in flag the Doctor page uses. No new external call is introduced.
+#[tauri::command]
+pub fn run_route_guard_signals() -> CmdResult<RouteGuardSignals> {
+    let settings = evidence::load_settings();
+    Ok(route_guard::collect_route_guard_signals(
+        settings.public_ip_check_enabled,
+    ))
 }
 
 #[tauri::command]

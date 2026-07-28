@@ -282,7 +282,42 @@ No query content, credentials, tokens, cookies, or external page content capture
 No external API calls. No filesystem writes. No system mutations.
 Redaction guarantees are structurally false at the type level — not runtime-derived.
 
-## 9. Roadmap position
+## 10. PR 15 + PR 19 — real Host Guard and Route Guard now feed the live score
+
+Two corrections to the sections above, now that real signal collection exists:
+
+- **PR 15** made Host Guard read real signals from the local machine (firewall, Defender, proxy,
+  known tunnel processes, elevation) — the "no real system calls are made" line in §9 was
+  accurate for PR 7 at the time, but is stale now. However, PR 15 only wired those real signals
+  into the standalone Host Guard panel — `hostGuardToHostInput()` (§9, PR 7) existed but was
+  never actually called from `SotyDashboard.tsx`, so the Score ring and sub-score grid kept
+  showing the static demo `host_score` regardless of what Host Guard found.
+- **PR 19** closed that gap and added the same treatment for Route:
+  - `src-tauri/src/route_guard.rs` — `collect_route_guard_signals()`: DNS servers and public IP
+    (reused from `system::collect_doctor()`), tunnel-process and proxy checks (reused from
+    `host_guard`), and a new route-table-readable check. No new external call — the public-IP
+    lookup only runs if the operator already enabled it in Settings.
+  - `src/lib/sotyRouteGuardReal.ts` — `mapRouteSignalsToScoreInput()` maps real signals to
+    `SotyScoreInput["route"]`. `dns_matches_profile` stays `null` (Scope-sub-score work, not yet
+    wired), `ipv6_leak_risk` stays `false` (not yet implemented, documented as such — never
+    fabricates a leak finding), `kill_switch_available`/`kill_switch_enabled` stay `null` (no
+    generic Windows API for an arbitrary VPN client's kill-switch state).
+  - `src/lib/sotyDemoInput.ts` — now also exports `DEMO_SCORE_INPUTS` (the underlying
+    `SotyScoreInput` objects, not just the precomputed `SotyScore` results) and
+    `DEMO_PRESET_PROFILE_NAMES`, so the dashboard can override individual sub-inputs.
+  - `src/pages/SotyDashboard.tsx` — the displayed `score` is now `computeSotyScore()` called
+    live on every render: the selected demo preset's base input, with `route` overridden by
+    `mapRouteSignalsToScoreInput()` once Route Guard has run, and `host` overridden by the
+    now-actually-used `hostGuardToHostInput()` once Host Guard has run. Scope/Intel/Evidence
+    remain demo-based until their own real-signal work lands. Real signals persist across demo
+    preset changes — switching presets no longer silently discards a real check result.
+
+Scope, Intel, and Evidence sub-scores are the remaining follow-up: Scope needs real loaded-profile
+state, Intel needs live Route Pack/OSINT Navigator selection state, and Evidence needs to reflect
+whether a snapshot was actually generated/saved this session — none of these require new external
+calls, all are wiring work against state that already exists in the app.
+
+## 11. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions. ✓ Done
 - **PR 3** — deterministic scoring engine. ✓ Done
@@ -291,7 +326,10 @@ Redaction guarantees are structurally false at the type level — not runtime-de
 - **PR 6** — Route Pack context, score integration, and mission suggestions. ✓ Done
 - **PR 7** — Host Guard posture scan (user-initiated; no auto-mutation). ✓ Done
 - **PR 8** — Ethical OSINT Navigator. ✓ Done
-- **PR 9** — score report folded into the Evidence Engine.
-- **PR 10** — BOFA Gate and export extension.
+- **PR 9** — score report folded into the Evidence Engine. ✓ Done
+- **PR 10** — BOFA Gate and export extension. ✓ Done
+- **PR 15** — Host Guard reads real signals. ✓ Done
+- **PR 19** — Route Guard reads real signals; Host + Route now feed the live Score. ✓ Done
+- **Follow-up** — real signals for Scope, Intel, and Evidence sub-scores.
 
 See [docs/roadmap.md](roadmap.md).
