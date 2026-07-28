@@ -8,6 +8,44 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 19)
+- `apps/desktop/src-tauri/src/route_guard.rs` (NEW) — `collect_route_guard_signals()`: real,
+  read-only route posture signals. Reuses `system::collect_doctor()` for DNS servers and
+  public IP (only performed if the operator already enabled `public_ip_check_enabled` in
+  Settings — no new external call), and reuses `host_guard::check_proxy_configured()` /
+  `check_known_tunnel_process()` (both made `pub(crate)`) rather than duplicating PowerShell
+  calls. Adds one new check: route table readability via `Get-NetRoute`.
+- `apps/desktop/src-tauri/src/commands.rs` — `run_route_guard_signals` Tauri command.
+- `apps/desktop/src-tauri/src/main.rs` — `route_guard` module registered, command added to
+  `invoke_handler`.
+- `src/lib/sotyRouteGuardReal.ts` (NEW) — `fetchRealRouteGuardSignals()` Tauri invoke wrapper,
+  `mapRouteSignalsToScoreInput()` mapping real signals into `SotyScoreInput["route"]`.
+  `dns_matches_profile` stays `null` (Scope-sub-score work, not yet wired). `ipv6_leak_risk`
+  stays `false` (not yet implemented — documented, never fabricates a leak finding).
+  `kill_switch_available`/`kill_switch_enabled` stay `null` (no generic Windows API for an
+  arbitrary VPN client's kill-switch state — the existing engine already treats `null` as
+  "unknown, no deduction" for both).
+- **Closed a real gap from PR 15**: Host Guard's real signals were only ever wired into the
+  standalone Host Guard panel — `hostGuardToHostInput()` existed since PR 7 but was never
+  actually called by `SotyDashboard.tsx`, so the Score ring/sub-score grid always showed the
+  static demo `host_score` regardless of what Host Guard found. The dashboard's displayed
+  `score` is now computed live via `computeSotyScore()` on every render: the selected demo
+  preset's base input, with `route` overridden once Route Guard has run and `host` overridden
+  once Host Guard has run (both via their respective mapper functions). Scope/Intel/Evidence
+  remain demo-based pending their own real-signal follow-up work.
+- `apps/desktop/src/lib/sotyDemoInput.ts` — now also exports `DEMO_SCORE_INPUTS` (the
+  underlying `SotyScoreInput` per preset, not just the precomputed `SotyScore`) and
+  `DEMO_PRESET_PROFILE_NAMES`, so the dashboard can override individual sub-inputs and
+  recompute rather than only ever displaying a static precomputed result.
+- `src/pages/SotyDashboard.tsx` — added "Run Route Guard" CTA (mirrors "Run Host Guard": async,
+  loading/error states, graceful fallback outside the packaged Tauri app) and a Route Guard
+  results panel (DNS servers, public IP, tunnel/proxy/route-table status). Real Host/Route
+  signals now persist across demo preset changes — switching presets no longer silently
+  discards a real check result.
+- Tests: `sotyRouteGuardReal.test.ts` (11 tests) covering every mapping decision above,
+  including the three fields that are intentionally always `null`/`false`.
+- `docs/soty-score.md` — new §10 documenting the PR 15 gap and the PR 19 fix; updated roadmap.
+
 ### Dependency research notes (not code changes)
 - **react-router-dom** — investigated upgrading past 6.30.4 to resolve the 2 remaining moderate
   CVEs (both require `>=7.18.0`). Found that `react-router` 7.12.0–8.2.0 — which includes

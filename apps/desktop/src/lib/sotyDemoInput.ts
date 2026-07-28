@@ -178,3 +178,27 @@ export const DEMO_PRESETS: Record<DemoPresetKey, SotyScore> = {
   blocked: computeSotyScore(BLOCKED_INPUT, { profileName: "out-of-scope" }),
   dirty: computeSotyScore(DIRTY_INPUT, { profileName: "dirty-host" }),
 };
+
+// ─── Underlying inputs + profile names (PR 19) ────────────────────────────────
+//
+// Exposed so the dashboard can override individual sub-inputs (route, host)
+// with real signals once a real check has run, then recompute a live score
+// via computeSotyScore() — instead of only ever showing the static demo
+// result. The demo score for a category stays in effect until its real
+// check has actually been run at least once this session.
+
+export const DEMO_SCORE_INPUTS: Record<DemoPresetKey, SotyScoreInput> = {
+  ready: READY_INPUT,
+  warn: WARN_INPUT,
+  exposed: EXPOSED_INPUT,
+  blocked: BLOCKED_INPUT,
+  dirty: DIRTY_INPUT,
+};
+
+export const DEMO_PRESET_PROFILE_NAMES: Record<DemoPresetKey, string> = {
+  ready: "authorized-lab",
+  warn: "lab-profile",
+  exposed: "osint-session",
+  blocked: "out-of-scope",
+  dirty: "dirty-host",
+};
