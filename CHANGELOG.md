@@ -28,6 +28,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   attempting this one yet given how new the native port is — deferring a few weeks for the
   ecosystem (Vite/vitest tooling, `@types/*` packages) to catch up before adopting.
 
+### Added (PR 18)
+- `apps/desktop/package.json` — upgraded `react` and `react-dom` together, `^18.2.0` → `^19.2.7`
+  (with matching `@types/react`/`@types/react-dom` bumps). React and React DOM must always be
+  the same major version — Dependabot had opened these as two separate single-package PRs
+  (#31 bumping only `react`, #28 bumping only `react-dom`), which would produce a broken
+  mismatched pair if merged independently. This PR bumps both together correctly; #31 and #28
+  should be closed as superseded once this merges.
+- Verified zero risky patterns before attempting the bump: no `forwardRef`, no `defaultProps`,
+  no `PropTypes`, no legacy string refs, no legacy Context API, and `main.tsx` already uses
+  `ReactDOM.createRoot()` (not the removed legacy `ReactDOM.render()`).
+- Verified: `npm test` (604/604), `npx tsc --noEmit` (clean), `npm run build` (production build
+  succeeded), manual dev-server smoke test (preset switching triggers correct re-render,
+  100/100 → 93/100, zero console errors).
+
 ### Fixed (PR 17)
 - `src/__tests__/sotyBofaExport.test.ts` and `src/__tests__/sotyHubExport.test.ts` — the
   "is deterministic for the same inputs" tests called their builder function twice and asserted
