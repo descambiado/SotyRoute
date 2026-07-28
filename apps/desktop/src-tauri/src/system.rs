@@ -50,8 +50,8 @@ pub fn collect_doctor(enable_public_ip: bool) -> DoctorReport {
     DoctorReport {
         os_name,
         os_version,
-        hostname: whoami::fallible::hostname().unwrap_or_else(|_| "unknown".into()),
-        user: whoami::username(),
+        hostname: whoami::hostname().unwrap_or_else(|_| "unknown".into()),
+        user: whoami::username().unwrap_or_else(|_| "unknown".into()),
         admin: is_elevated::is_elevated(),
         interfaces,
         dns_servers,
