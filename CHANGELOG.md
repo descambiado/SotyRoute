@@ -17,6 +17,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   PR). Fixed by freezing the clock with `vi.useFakeTimers()` / `vi.setSystemTime()` for the
   duration of each test. Confirmed non-flaky with 5 consecutive local runs (604/604 each).
 
+### Added (PR 16)
+- `README.md` — added CI, License, Platform, Tauri, and Rust badges at the top of the README.
+- GitHub repo description updated to reflect the current SOTY positioning (was still the
+  original v0.1.0 "traffic routing, tunnel orchestration" framing).
+
 ### Added (PR 15)
 - `apps/desktop/src-tauri/src/host_guard.rs` (NEW) — `collect_host_guard_signals()`: real,
   read-only host posture signals via PowerShell (`Get-NetFirewallProfile`,

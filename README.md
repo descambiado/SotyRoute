@@ -1,5 +1,11 @@
 # SotyRoute
 
+[![CI](https://github.com/descambiado/SotyRoute/actions/workflows/ci.yml/badge.svg)](https://github.com/descambiado/SotyRoute/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/descambiado/SotyRoute)](LICENSE)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6)](README.md#8-quickstart)
+[![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri-24C8DB)](https://tauri.app)
+[![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-DEA584)](https://www.rust-lang.org)
+
 **SotyRoute — SOTY-ready route, OPSEC and evidence control plane.**
 
 > *Before you operate, become SOTY-ready.*
