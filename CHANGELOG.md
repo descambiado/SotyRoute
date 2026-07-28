@@ -8,6 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Dependency research notes (not code changes)
+- **react-router-dom** — investigated upgrading past 6.30.4 to resolve the 2 remaining moderate
+  CVEs (both require `>=7.18.0`). Found that `react-router` 7.12.0–8.2.0 — which includes
+  7.18.1, the latest published version as of this note — carries a new **high**-severity
+  advisory ([GHSA-qwww-vcr4-c8h2](https://github.com/advisories/GHSA-qwww-vcr4-c8h2), RSC Mode
+  CSRF Bypass Allows Action Execution Before 400 Response). There is currently no published
+  version that fixes the old moderate CVEs without introducing this new high-severity one —
+  `npm audit fix --force`'s own suggested resolution is 7.11.0, which is *below* both the fix
+  range and the new vulnerable range. Staying on 6.30.4. Closed Dependabot PRs #30 and #43
+  (superseded / not proceeding) with this reasoning. Revisit once a version above 8.2.0 ships.
+- **TypeScript 7.0** — investigated the Dependabot PR bumping `typescript` 5.9.3 → 7.0.2 (skips
+  the entire 6.x line). TypeScript 7.0 ("Corsa") is a complete native compiler rewrite in Go,
+  reaching general availability 2026-07-08 — 20 days old at the time of this note. This
+  project's `tsconfig.json` already avoids every flag TS 7.0 makes a hard error (`target: es5`,
+  `baseUrl`, `moduleResolution: node` are absent; already on `ES2022`/`ESNext`/`bundler`), and
+  the build only invokes `tsc` as a CLI (never programmatically), which sidesteps 7.0's "no
+  stable programmatic API yet" caveat. Config-compatible in principle, but deliberately not
+  attempting this one yet given how new the native port is — deferring a few weeks for the
+  ecosystem (Vite/vitest tooling, `@types/*` packages) to catch up before adopting.
+
 ### Added (PR 18)
 - `apps/desktop/package.json` — upgraded `react` and `react-dom` together, `^18.2.0` → `^19.2.7`
   (with matching `@types/react`/`@types/react-dom` bumps). React and React DOM must always be
