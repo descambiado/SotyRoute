@@ -22,6 +22,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   succeeded), manual dev-server smoke test (preset switching triggers correct re-render,
   100/100 → 93/100, zero console errors).
 
+### Fixed (PR 17)
+- `src/__tests__/sotyBofaExport.test.ts` and `src/__tests__/sotyHubExport.test.ts` — the
+  "is deterministic for the same inputs" tests called their builder function twice and asserted
+  byte-identical JSON output, but both `buildBofaExportPayload()` and `buildSotyhubExportPayload()`
+  stamp `generated_at` with a live `new Date()` call — a real, intermittent flake whenever the two
+  calls straddled a millisecond boundary (observed on CI while rebasing an unrelated Dependabot
+  PR). Fixed by freezing the clock with `vi.useFakeTimers()` / `vi.setSystemTime()` for the
+  duration of each test. Confirmed non-flaky with 5 consecutive local runs (604/604 each).
+
+### Added (PR 16)
+- `README.md` — added CI, License, Platform, Tauri, and Rust badges at the top of the README.
+- GitHub repo description updated to reflect the current SOTY positioning (was still the
+  original v0.1.0 "traffic routing, tunnel orchestration" framing).
+
 ### Added (PR 15)
 - `apps/desktop/src-tauri/src/host_guard.rs` (NEW) — `collect_host_guard_signals()`: real,
   read-only host posture signals via PowerShell (`Get-NetFirewallProfile`,
