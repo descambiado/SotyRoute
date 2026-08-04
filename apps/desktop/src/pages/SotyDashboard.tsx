@@ -25,6 +25,12 @@
  *        preset until then, so the showcase presets stay intact on first
  *        load). blocked_resource_requested is always real — the catalog
  *        UI has no code path to request a blocked-by-policy resource.
+ * Evidence Guard: reads real, read-only evidence-readiness signals (evidence
+ *        directory existence/writability, recorded session count, BOFA/
+ *        SotyHUB export settings) via a "Run Evidence Guard" CTA, mirroring
+ *        Host/Route Guard. Never creates the evidence directory — a fresh
+ *        install with nothing there yet is reported honestly as not ready.
+ *        Scope remains the only sub-score still fully demo-based.
  * PR 8: Ethical OSINT Navigator — "Open OSINT Navigator" CTA enabled.
  *       Local catalog of authorized defensive resources with category/risk
  *       filters, confirmation gates, and blocked-by-policy cards.
@@ -70,6 +76,11 @@ import {
 import SotyOsintNavigator from "../components/soty/SotyOsintNavigator";
 import { mapIntelToScoreInput } from "../lib/sotyIntelReal";
 import type { OsintFilterState } from "../types/osintNavigator";
+import {
+  fetchRealEvidenceGuardSignals,
+  mapEvidenceSignalsToScoreInput,
+  type EvidenceGuardSignals,
+} from "../lib/sotyEvidenceGuardReal";
 import { buildEvidenceSnapshot } from "../lib/sotyEvidenceBuilder";
 import type { SotyEvidenceSnapshot } from "../types/sotyEvidence";
 import SotyEvidencePanel from "../components/soty/SotyEvidencePanel";
@@ -114,6 +125,12 @@ export default function SotyDashboard() {
   const [routeGuardLoading, setRouteGuardLoading] = useState(false);
   const [routeGuardError, setRouteGuardError] = useState<string | null>(null);
   const routeGuardRef = useRef<HTMLDivElement>(null);
+
+  // ── Evidence Guard state ─────────────────────────────────────────────────
+  const [evidenceGuardSignals, setEvidenceGuardSignals] = useState<EvidenceGuardSignals | null>(null);
+  const [evidenceGuardLoading, setEvidenceGuardLoading] = useState(false);
+  const [evidenceGuardError, setEvidenceGuardError] = useState<string | null>(null);
+  const evidenceGuardRef = useRef<HTMLDivElement>(null);
 
   // ── OSINT Navigator state ─────────────────────────────────────────────────
   const [osintOpen, setOsintOpen] = useState(false);
@@ -181,6 +198,25 @@ export default function SotyDashboard() {
       setRouteGuardLoading(false);
       setTimeout(() => {
         routeGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+  }
+
+  async function handleRunEvidenceGuard() {
+    setEvidenceGuardLoading(true);
+    setEvidenceGuardError(null);
+    try {
+      const signals = await fetchRealEvidenceGuardSignals();
+      setEvidenceGuardSignals(signals);
+    } catch {
+      setEvidenceGuardSignals(null);
+      setEvidenceGuardError(
+        "Could not read real evidence signals. Real Evidence Guard checks only run inside the packaged Tauri app on Windows."
+      );
+    } finally {
+      setEvidenceGuardLoading(false);
+      setTimeout(() => {
+        evidenceGuardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 50);
     }
   }
@@ -272,10 +308,10 @@ export default function SotyDashboard() {
     : null;
 
   // Live score: starts from the selected demo preset's input, then overrides
-  // route/host with real signals once their real checks have run this
-  // session, and intel with real Route Pack / OSINT Navigator interaction
-  // once touched. Scope/Evidence still run on demo data until a future PR
-  // wires real signals for those categories too.
+  // route/host/evidence with real signals once their real checks have run
+  // this session, and intel with real Route Pack / OSINT Navigator
+  // interaction once touched. Scope is the only sub-score still fully
+  // demo-based, pending its own real-signal follow-up work.
   const scoreInput = {
     ...DEMO_SCORE_INPUTS[preset],
     route: routeGuardSignals
@@ -289,6 +325,9 @@ export default function SotyDashboard() {
       selectedPackId,
       osintFilters,
     }),
+    evidence: evidenceGuardSignals
+      ? mapEvidenceSignalsToScoreInput(evidenceGuardSignals, DEMO_SCORE_INPUTS[preset].evidence)
+      : DEMO_SCORE_INPUTS[preset].evidence,
   };
   const score = computeSotyScore(scoreInput, {
     profileName: DEMO_PRESET_PROFILE_NAMES[preset],
@@ -311,9 +350,10 @@ export default function SotyDashboard() {
       {/* ── Safe-mode notice ── */}
       <div className="safe-mode-notice">
         <strong>Local only.</strong>
-        Host Guard and Route Guard read real, read-only signals from this machine, and your
-        Route Pack / OSINT Navigator selections feed the Score above — everything else on this
-        page still runs against demo/simulated data. Nothing here mutates system state.
+        Host Guard, Route Guard and Evidence Guard read real, read-only signals from this
+        machine, and your Route Pack / OSINT Navigator selections feed the Score above — Scope
+        is the only sub-score still running on demo/simulated data. Nothing here mutates system
+        state.
         No external APIs. No network traffic. No BOFA launch. No SotyHUB upload.
         Evidence and export files are written to{" "}
         <span className="mono">~/.sotyroute/runs/</span> only.
@@ -489,6 +529,18 @@ export default function SotyDashboard() {
           </button>
           <button
             className="btn"
+            onClick={handleRunEvidenceGuard}
+            disabled={evidenceGuardLoading}
+            title="Read real, read-only evidence-readiness signals (directory writability, recorded sessions, export settings). No mutations, no external calls."
+          >
+            {evidenceGuardLoading
+              ? "Reading evidence signals…"
+              : evidenceGuardSignals
+                ? "Re-run Evidence Guard"
+                : "Run Evidence Guard"}
+          </button>
+          <button
+            className="btn"
             onClick={handleOpenOsintNavigator}
             title="Open the Ethical OSINT Navigator — local authorized resource catalog. No external API calls."
           >
@@ -584,6 +636,50 @@ export default function SotyDashboard() {
               <p className="muted" style={{ marginTop: 12, fontSize: 11.5 }}>
                 DNS-profile matching, IPv6 leak detection, and kill-switch state are not yet
                 implemented in real mode — those signals stay demo-based until a future PR.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Evidence Guard panel ── */}
+      {(evidenceGuardSignals || evidenceGuardError) && (
+        <div ref={evidenceGuardRef} style={{ marginTop: 24 }}>
+          <hr className="section-divider" />
+          <div className="soty-section-header" style={{ marginBottom: 12 }}>
+            <h2 className="soty-section-title">Evidence Guard</h2>
+            <span className="soty-section-sub" style={{ fontStyle: "italic" }}>
+              Real signals from this machine — read-only, feeds the Evidence sub-score above
+            </span>
+          </div>
+          {evidenceGuardError && (
+            <div className="evidence-save-error">{evidenceGuardError}</div>
+          )}
+          {evidenceGuardSignals && (
+            <div className="evidence-panel">
+              <div className="evidence-kv">
+                <span className="evidence-k">Evidence directory</span>
+                <span className="evidence-v">{evidenceGuardSignals.evidence_dir}</span>
+                <span className="evidence-k">Directory ready</span>
+                <span className="evidence-v">
+                  {evidenceGuardSignals.evidence_dir_ready ? "yes" : "no — check Settings"}
+                </span>
+                <span className="evidence-k">Recorded sessions</span>
+                <span className="evidence-v">{evidenceGuardSignals.session_count}</span>
+                <span className="evidence-k">BOFA export enabled</span>
+                <span className="evidence-v">
+                  {evidenceGuardSignals.bofa_export_enabled ? "yes" : "no"}
+                </span>
+                <span className="evidence-k">SotyHUB export enabled</span>
+                <span className="evidence-v">
+                  {evidenceGuardSignals.sotyhub_export_enabled ? "yes" : "no"}
+                </span>
+              </div>
+              <p className="muted" style={{ marginTop: 12, fontSize: 11.5 }}>
+                Never creates the evidence directory — a fresh install with nothing there yet is
+                reported honestly as not ready, not silently fixed. Evidence level and the
+                enabled/disabled toggle itself are not yet implemented in real mode — those stay
+                demo-based until a future PR.
               </p>
             </div>
           )}

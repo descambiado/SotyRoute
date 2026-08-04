@@ -3,6 +3,7 @@
 
 mod commands;
 mod evidence;
+mod evidence_guard;
 mod host_guard;
 mod planner;
 mod profiles;
@@ -17,6 +18,7 @@ fn main() {
             run_doctor,
             run_host_guard_signals,
             run_route_guard_signals,
+            run_evidence_guard_signals,
             load_profile,
             validate_profile,
             list_example_profiles,

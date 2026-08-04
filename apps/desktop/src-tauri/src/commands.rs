@@ -1,6 +1,7 @@
 use crate::evidence::{
     self, AppSettings, SessionDetail, SessionSummary, SotyEvidenceSaveResult, SotyExportSaveResult,
 };
+use crate::evidence_guard::{self, EvidenceGuardSignals};
 use crate::host_guard::{self, HostGuardSignals};
 use crate::planner::{self, Plan};
 use crate::profiles::{self, Mode, Profile, ValidationResult};
@@ -39,6 +40,14 @@ pub fn run_route_guard_signals() -> CmdResult<RouteGuardSignals> {
     Ok(route_guard::collect_route_guard_signals(
         settings.public_ip_check_enabled,
     ))
+}
+
+/// Real, read-only evidence-readiness signals for the SOTY Dashboard's
+/// Evidence score. Never creates the evidence directory or writes anything —
+/// a fresh install with no directory yet is reported honestly as not ready.
+#[tauri::command]
+pub fn run_evidence_guard_signals() -> CmdResult<EvidenceGuardSignals> {
+    Ok(evidence_guard::collect_evidence_guard_signals())
 }
 
 #[tauri::command]
