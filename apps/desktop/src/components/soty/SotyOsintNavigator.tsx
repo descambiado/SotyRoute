@@ -13,7 +13,7 @@
  * - No data is logged, sent, or automated by this component.
  * - All read-only display. No system mutations.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { OSINT_CATALOG } from "../../lib/osintCatalog";
 import {
   OSINT_CATEGORIES,
@@ -31,16 +31,22 @@ import OsintConfirmationModal from "./OsintConfirmationModal";
 interface Props {
   /** Currently selected route pack ID from the dashboard — used for pack-relevance badges. */
   selectedPackId: string | null;
+  /** Reports live filter state up to the dashboard so it can feed the real Intel sub-score (PR 20). */
+  onFiltersChange?: (filters: OsintFilterState) => void;
 }
 
 const FILTER_RISKS: readonly OsintRiskLevel[] = ["low", "medium", "high"];
 
-export default function SotyOsintNavigator({ selectedPackId }: Props) {
+export default function SotyOsintNavigator({ selectedPackId, onFiltersChange }: Props) {
   const [filters, setFilters] = useState<OsintFilterState>({ categories: [], risks: [] });
   const [confirmation, setConfirmation] = useState<OsintConfirmationState>({
     status: "idle",
     resource: null,
   });
+
+  useEffect(() => {
+    onFiltersChange?.(filters);
+  }, [filters, onFiltersChange]);
 
   // ── Filter logic ────────────────────────────────────────────────────────────
 
