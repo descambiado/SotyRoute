@@ -8,6 +8,40 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 59 — shared active-profile state, infrastructure only)
+- `apps/desktop/src/lib/activeProfileState.ts` (NEW) — pure state-transition logic:
+  `activeProfileReducer` (`SET`/`CLEAR`), `INITIAL_ACTIVE_PROFILE_STATE`, and
+  `shouldPublishActiveProfile()` — the rule that only a profile which has actually passed
+  validation may become active. Kept separate from the React Context so it's testable without
+  rendering anything.
+- `apps/desktop/src/context/ActiveProfileContext.tsx` (NEW) — `ActiveProfileProvider` +
+  `useActiveProfile()`. In-memory, session-only (no persistence, matching every other piece of
+  dashboard state in this app). Public shape: `activeProfile: Profile | null`,
+  `setActiveProfile(profile)`, `clearActiveProfile()`.
+- `apps/desktop/src/App.tsx` — wraps the whole app in `ActiveProfileProvider`, above the router,
+  so `Profiles`, `Dashboard`, and `SotyDashboard` can all reach the same instance.
+- `apps/desktop/src/pages/Profiles.tsx` — publishes into the shared context only after
+  `validateProfile()` returns `valid: true`. A loaded-but-unvalidated or loaded-but-invalid
+  profile never becomes active; a failed load never touches a previously-active profile. No UI
+  redesign — only the publish call was added.
+- `apps/desktop/src/pages/SotyDashboard.tsx` — reads and displays the active profile (name + mode,
+  or "no active profile loaded") in a small read-only line. **Does not affect scoring in any way**
+  — `scope` remains absent from the real-signal override object in `scoreInput`, exactly as
+  before this PR. The SOTY Score and every sub-score are unchanged by this PR.
+- `apps/desktop/src/pages/Dashboard.tsx` — intentionally **not** changed. Its own profile picker
+  directly drives real Observe/Dry-run Tauri calls, independent of the Profiles-page validation
+  flow; replacing it with the shared (validated-only) active profile would be a real behavior
+  change, not a safe like-for-like swap. Deferred, documented in
+  `docs/soty-scope-architecture.md`, not silently skipped.
+- Tests: `activeProfileState.test.ts` (8 tests) — initial state, `SET`, replacement, `CLEAR`
+  (including clearing an already-empty state), and all three `shouldPublishActiveProfile` cases
+  (no validation yet, failed, passed).
+- `docs/soty-scope-architecture.md` — marked PR 59 done with implementation notes; `docs/soty-score.md`
+  — notes the shared active-profile infrastructure now exists but Scope itself is still demo.
+- No app behavior changed outside active-profile visibility: no target declaration UI, no
+  `mapScopeToScoreInput`, no Scope deduction changes, no Host/Route/Intel/Evidence changes, no
+  Rust/Tauri changes, no new Tauri commands, no dependency changes.
+
 ### Added (PR 58 — Scope architecture design, planning only)
 - `docs/soty-scope-architecture.md` (NEW) — full design for making Scope (25% weight, the last
   demo-only sub-score) real in a future implementation PR. Covers: current state (Scope input

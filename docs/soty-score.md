@@ -402,9 +402,13 @@ Scope is now the only sub-score still fully demo-based.
 - **Evidence Guard** — real evidence-readiness signals (directory, session count, export
   settings). ✓ Done
 - **PR 58** — Scope architecture design (planning only, no implementation). ✓ Done
+- **PR 59** — shared active-profile state (`ActiveProfileContext`, `Profiles.tsx` publishes on
+  successful validation, `SotyDashboard.tsx` displays it read-only). Infrastructure only — Scope
+  itself is still fully demo-based; `scope` remains absent from `SotyDashboard`'s real-signal
+  override object, exactly as it was before this PR. ✓ Done
 - **Follow-up** — real Scope signals: the last remaining demo-based sub-score. See
-  [docs/soty-scope-architecture.md](soty-scope-architecture.md) for the full design — shared
-  active-profile state, target declaration UX, exact-match scope checking, and a proposed
-  implementation split (PR59+) — before any of that code is written.
+  [docs/soty-scope-architecture.md](soty-scope-architecture.md) for the full design — target
+  declaration UX, exact-match scope checking, and the mapper that will actually feed
+  `scoreInput.scope` — before any of that code is written.
 
 See [docs/roadmap.md](roadmap.md).

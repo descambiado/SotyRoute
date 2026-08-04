@@ -63,6 +63,7 @@ import { getPackDemoPreset } from "../lib/sotyRoutePackScoring";
 import { ROUTE_PACK_CONTEXTS } from "../lib/sotyRoutePackContext";
 import { DEFAULT_ROUTE_PACKS } from "../lib/routePackDefaults";
 import type { MissionType, RouteCard } from "../types/routeCard";
+import { useActiveProfile } from "../context/ActiveProfileContext";
 
 import { runHostGuard } from "../lib/sotyHostGuardEngine";
 import { fetchRealHostGuardSignals, mapSignalsToHostGuardInput } from "../lib/sotyHostGuardReal";
@@ -100,6 +101,9 @@ import SotyRouteCardPanel from "../components/soty/SotyRouteCardPanel";
 import SotyHostGuardPanel from "../components/soty/SotyHostGuardPanel";
 
 export default function SotyDashboard() {
+  // ── Active profile (PR 59 — display only, not yet used for scoring) ──────
+  const { activeProfile } = useActiveProfile();
+
   // ── Demo preset (score context) ─────────────────────────────────────────
   const [preset, setPreset] = useState<DemoPresetKey>("ready");
   /** Set when a pack auto-updates the context, cleared on manual preset change. */
@@ -358,6 +362,18 @@ export default function SotyDashboard() {
         Evidence and export files are written to{" "}
         <span className="mono">~/.sotyroute/runs/</span> only.
         For authorized security work only.
+      </div>
+
+      {/* ── Active profile status (PR 59 — read-only, not yet used for scoring) ── */}
+      <div className="muted" style={{ marginBottom: 14, fontSize: 12.5 }}>
+        {activeProfile ? (
+          <>
+            Active profile: <span className="mono">{activeProfile.name}</span> (mode:{" "}
+            <span className="mono">{activeProfile.mode}</span>) — not yet used for scoring.
+          </>
+        ) : (
+          "No active profile loaded — load and validate one on the Profiles page. Not yet used for scoring."
+        )}
       </div>
 
       {/* ── Demo preset selector ── */}

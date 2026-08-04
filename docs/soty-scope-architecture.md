@@ -1,12 +1,13 @@
 # Scope sub-score — architecture design
 
-**Status: design only. Nothing in this document is implemented yet.** This is the last of the
-five SOTY Score sub-scores still running entirely on demo data — Route, Host, Intel and Evidence
-all read real signals as of PRs 15/19/20/Evidence Guard (see [docs/soty-score.md](soty-score.md)
-§§10–13). Scope is different in kind, not just in degree: the other four needed a real *signal*
-to read. Scope needs a real *concept* — a shared active profile, and an operator-declared target —
-neither of which exists anywhere in the app today. That's why it was deferred rather than
-attempted alongside the others, and why it gets its own design pass before any code.
+**Status: PR 59 (shared active-profile state) is implemented. Scope itself is still demo.** This
+is the last of the five SOTY Score sub-scores still running entirely on demo data — Route, Host,
+Intel and Evidence all read real signals as of PRs 15/19/20/Evidence Guard (see
+[docs/soty-score.md](soty-score.md) §§10–13). Scope is different in kind, not just in degree: the
+other four needed a real *signal* to read. Scope needs a real *concept* — a shared active profile,
+and an operator-declared target. The active-profile half of that now exists (PR 59, infrastructure
+only, no scoring effect); the declared-target half and the actual Scope wiring are still §5's
+follow-up PR.
 
 ## 1. Current state
 
@@ -226,10 +227,19 @@ architectural novelty — the shared active-profile store — is the one piece w
 own, because it's reviewable independently ("we added a Context, nothing else changed") in a way
 the UI-plus-scoring work isn't.
 
-- **PR59 — shared active-profile state.** `ActiveProfileContext` (or equivalent), `Profiles.tsx`
-  publishes into it on load/validate, `SotyDashboard.tsx` reads and displays it (name, mode,
-  validity, allowed/blocked counts) but does **not** yet touch `scoreInput`. Zero scoring change,
-  zero new Tauri commands, purely additive. Small and independently reviewable.
+- **PR59 — shared active-profile state. ✓ Done.** `src/context/ActiveProfileContext.tsx` (React
+  Context + `useReducer`, wrapping the whole app in `App.tsx` so every route can reach it) backed
+  by a pure, independently-tested reducer in `src/lib/activeProfileState.ts`
+  (`activeProfileReducer`, `shouldPublishActiveProfile`). `Profiles.tsx` publishes into it only
+  after `validateProfile()` returns `valid: true` — a loaded-but-unvalidated or
+  loaded-but-invalid profile never becomes active, and a failed load never touches a
+  previously-active profile. `SotyDashboard.tsx` reads and displays it (name + mode, or "no
+  active profile loaded") but does **not** touch `scoreInput` — `scope` remains absent from the
+  score composition, exactly as before. Zero scoring change, zero new Tauri commands, purely
+  additive. `Dashboard.tsx` was deliberately left unchanged: its own profile picker directly
+  drives real Observe/Dry-run actions independent of the Profiles-page validation flow, so
+  swapping it for the shared (validated-only) active profile would be a real behavior change, not
+  a safe like-for-like replacement — deferred, not forgotten.
 - **PR60 — target declaration + real Scope score.** The target-declaration input, the exact-match
   checking function (§2), the `authorized_use_confirmed` control, `mapScopeToScoreInput()`, the
   touched-gating wiring into `SotyDashboard`'s `scoreInput`, the four UX states from §4, and the

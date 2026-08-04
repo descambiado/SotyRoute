@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { Profile, ValidationResult } from "../lib/types";
+import { useActiveProfile } from "../context/ActiveProfileContext";
+import { shouldPublishActiveProfile } from "../lib/activeProfileState";
 
 export default function Profiles() {
+  const { setActiveProfile } = useActiveProfile();
   const [examples, setExamples] = useState<{ name: string; path: string }[]>([]);
   const [selected, setSelected] = useState<{ name: string; path: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -35,6 +38,11 @@ export default function Profiles() {
     try {
       const r = await api.validateProfile(profile);
       setResult(r);
+      // Only a profile that has actually passed validation becomes the
+      // shared active profile — a loaded-but-invalid profile never does.
+      if (shouldPublishActiveProfile(r)) {
+        setActiveProfile(profile);
+      }
     } catch (e) {
       setError(String(e));
     }
