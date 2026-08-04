@@ -20,7 +20,7 @@ chrono = { version = "0.4", features = ["serde"] }
 whoami = "2.1"
 dirs = "6.0"
 is_elevated = "0.1"
-if-addrs = "0.10"
+if-addrs = "0.15"
 anyhow = "1.0"
 thiserror = "2.0"
 
