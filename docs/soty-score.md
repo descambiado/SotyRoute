@@ -348,7 +348,44 @@ input just never read them.
 
 Scope and Evidence remain the last two demo-based sub-scores.
 
-## 13. Roadmap position
+## 13. Evidence Guard — real evidence-readiness signals
+
+Evidence's fields split cleanly into two groups once checked against what `AppSettings` and the
+evidence pipeline actually track today:
+
+- **Real and live** (both have an active deduction rule):
+  - `evidence_directory_ready` — a genuine read-only filesystem check: the configured
+    `evidence_dir` exists, is a directory, and is not marked read-only. Deliberately never
+    creates the directory or writes a probe file to test it — a fresh install with nothing
+    there yet is reported honestly as not ready, not silently fixed by the check itself.
+  - `session_id_available` — proxied by "at least one session has ever been recorded"
+    (`evidence::list_sessions().len() > 0`). Imperfect (it answers "has this pipeline ever run,"
+    not "is a session ID assigned right now") but honest and documented as such, the same
+    trade-off already accepted for `tunnel_process_running` in Route Guard.
+- **Real but currently inert**: `bofa_export_enabled` / `sotyhub_export_enabled` map directly to
+  `AppSettings.export_bofa_default` / `export_sotyhub_default` — but neither field is referenced
+  by any deduction rule in `evidenceRules()` today, so wiring them real has no visible score
+  effect yet. Still worth doing: it avoids a future landmine where someone adds a deduction for
+  either field and it silently starts scoring real users against stale demo defaults.
+- **No real backing exists**: `evidence_enabled` and `evidence_level` have no corresponding field
+  anywhere in `AppSettings` or `Profile` — `evidence_level` in particular is a 4-state concept
+  (`off`/`minimal`/`standard`/`full`) that doesn't exist in the real settings schema at all. Both
+  stay demo-based, the same treatment given to `query_logging_disabled` in §12.
+
+Implementation, mirroring Host/Route Guard exactly (a "Run Evidence Guard" CTA, not always-live
+like Intel — the directory-readiness check needs actual read-only I/O, and gating behind an
+explicit action keeps a fresh install from looking artificially bad before the operator asks):
+
+- `src-tauri/src/evidence_guard.rs` (NEW) — `collect_evidence_guard_signals()`. Reuses
+  `evidence::load_settings()` and `evidence::list_sessions()` rather than duplicating either.
+- `src-tauri/src/commands.rs` — `run_evidence_guard_signals` Tauri command.
+- `src/lib/sotyEvidenceGuardReal.ts` (NEW) — `mapEvidenceSignalsToScoreInput()`.
+- `src/pages/SotyDashboard.tsx` — "Run Evidence Guard" CTA and results panel, live `evidence`
+  override added to the score composition alongside `route`/`host`/`intel`.
+
+Scope is now the only sub-score still fully demo-based.
+
+## 14. Roadmap position
 
 - **PR 2** — schema/types for the score report and deductions. ✓ Done
 - **PR 3** — deterministic scoring engine. ✓ Done
@@ -362,6 +399,8 @@ Scope and Evidence remain the last two demo-based sub-scores.
 - **PR 15** — Host Guard reads real signals. ✓ Done
 - **PR 19** — Route Guard reads real signals; Host + Route now feed the live Score. ✓ Done
 - **PR 20** — Intel reads real Route Pack/OSINT Navigator selection state. ✓ Done
-- **Follow-up** — real signals for Scope and Evidence sub-scores.
+- **Evidence Guard** — real evidence-readiness signals (directory, session count, export
+  settings). ✓ Done
+- **Follow-up** — real Scope signals: the last remaining demo-based sub-score.
 
 See [docs/roadmap.md](roadmap.md).

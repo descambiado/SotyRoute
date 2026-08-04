@@ -8,6 +8,33 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (Evidence Guard)
+- `apps/desktop/src-tauri/src/evidence_guard.rs` (NEW) — `collect_evidence_guard_signals()`:
+  real, read-only evidence-readiness signals. Reuses `evidence::load_settings()` and
+  `evidence::list_sessions()` rather than duplicating either. The directory-readiness check
+  never creates the directory or writes a probe file — a fresh install with nothing there yet
+  is reported honestly as not ready, not silently fixed by the check itself.
+- `apps/desktop/src-tauri/src/commands.rs` — `run_evidence_guard_signals` Tauri command.
+- `apps/desktop/src-tauri/src/main.rs` — `evidence_guard` module registered, command added to
+  `invoke_handler`.
+- `src/lib/sotyEvidenceGuardReal.ts` (NEW) — `mapEvidenceSignalsToScoreInput()`:
+  - `evidence_directory_ready` and `session_id_available` (proxied by "at least one session has
+    ever been recorded") are the only two fields with live deduction effect, and both map to a
+    genuine real check.
+  - `bofa_export_enabled`/`sotyhub_export_enabled` map to the real Settings values
+    (`export_bofa_default`/`export_sotyhub_default`) — currently inert (no deduction rule
+    references either field yet) but correctly wired for if one is added later.
+  - `evidence_enabled`/`evidence_level` always pass through the demo preset's value — neither
+    concept has a real backing field anywhere in `AppSettings` or `Profile` today, so this never
+    guesses at one. Same treatment already given to `query_logging_disabled` in the Intel PR.
+- `src/pages/SotyDashboard.tsx` — "Run Evidence Guard" CTA (mirrors Host/Route Guard: async,
+  loading/error states, graceful fallback outside the packaged Tauri app) and a results panel.
+  Live `evidence` override added to the score composition alongside `route`/`host`/`intel`.
+  Safe-mode notice updated — Scope is now the only sub-score still demo-based.
+- Tests: `sotyEvidenceGuardReal.test.ts` (6 tests) covering every mapping decision above.
+- `docs/soty-score.md` — new §13 documenting the real/inert/demo split for each Evidence field;
+  updated roadmap (§14).
+
 ### Added (PR 20)
 - `apps/desktop/src/components/soty/SotyOsintNavigator.tsx` — new optional `onFiltersChange`
   prop, reported via `useEffect` on every category/risk filter change.
