@@ -8,6 +8,28 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 58 — Scope architecture design, planning only)
+- `docs/soty-scope-architecture.md` (NEW) — full design for making Scope (25% weight, the last
+  demo-only sub-score) real in a future implementation PR. Covers: current state (Scope input
+  falls through from demo unconditionally; three independent page-local Profile `useState`
+  instances that never share; no target-declaration UI anywhere in the app); the target model
+  (shared "active profile," an operator-typed "declared target" distinct from a profile's static
+  `allowed_targets`, and a deliberately conservative case-insensitive exact-match rule against
+  allow/block lists — no DNS, no CIDR, no substring matching, to avoid a false "in scope" result);
+  proposed data flow (a new `ActiveProfileContext`, no new Tauri command needed — `loadProfile`/
+  `validateProfile` already exist); UX states (no-profile / no-target / in-scope / blocked,
+  reusing existing panel styling); a recommended 3-PR implementation split (shared state → target
+  UI + real score wiring → polish) with the originally-considered 4-PR split kept as a documented
+  alternative; safety boundaries (no scraping, no target probing, no network calls, user-declared
+  scope only, local-only state); non-goals; and a test plan that is explicit about an existing
+  gap — this codebase has no component-level UI test precedent today (no `@testing-library`
+  dependency), so the plan follows the existing pure-function-test pattern rather than silently
+  introducing one.
+- `docs/soty-score.md` §14 — short pointer to the new design document, plus the PR 58 entry in
+  the roadmap list.
+- No code, scoring logic, Profile behavior, shared-state code, Tauri commands, dependencies,
+  Rust/Tauri files, or Host/Route/Intel/Evidence logic changed. Planning only.
+
 ### Added (PR 57 — real demo screenshots, docs only)
 - `docs/assets/soty-dashboard.png`, `docs/assets/soty-score-real-signals.png`,
   `docs/assets/soty-evidence-exports.png` (NEW) — real, non-fabricated screenshots of the live

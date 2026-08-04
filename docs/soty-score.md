@@ -401,6 +401,10 @@ Scope is now the only sub-score still fully demo-based.
 - **PR 20** — Intel reads real Route Pack/OSINT Navigator selection state. ✓ Done
 - **Evidence Guard** — real evidence-readiness signals (directory, session count, export
   settings). ✓ Done
-- **Follow-up** — real Scope signals: the last remaining demo-based sub-score.
+- **PR 58** — Scope architecture design (planning only, no implementation). ✓ Done
+- **Follow-up** — real Scope signals: the last remaining demo-based sub-score. See
+  [docs/soty-scope-architecture.md](soty-scope-architecture.md) for the full design — shared
+  active-profile state, target declaration UX, exact-match scope checking, and a proposed
+  implementation split (PR59+) — before any of that code is written.
 
 See [docs/roadmap.md](roadmap.md).
