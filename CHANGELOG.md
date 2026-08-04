@@ -8,6 +8,33 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 57 — real demo screenshots, docs only)
+- `docs/assets/soty-dashboard.png`, `docs/assets/soty-score-real-signals.png`,
+  `docs/assets/soty-evidence-exports.png` (NEW) — real, non-fabricated screenshots of the live
+  `/soty` UI. Captured against the Vite dev server (`localhost:1420/#/soty`) using headless
+  Chrome and a temporary Playwright script (`playwright-core`, installed into an isolated
+  throwaway directory via `npm exec`/`npm install` — never added to this repo's `package.json`
+  or `package-lock.json`), driving the machine's already-installed Chrome via `executablePath`
+  rather than downloading a bundled browser.
+- These are **browser preview captures, not packaged Tauri**: Host Guard, Route Guard and
+  Evidence Guard all correctly show their honest graceful-fallback message in
+  `soty-score-real-signals.png`, since none of their underlying Tauri commands exist outside the
+  packaged app — that is the real, correct, only-possible behavior in this capture environment,
+  documented as such rather than presented as if it were live signal data. The Intel sub-score
+  and Route Pack selection in that capture are genuinely real (both are pure browser-side state).
+  `soty-evidence-exports.png` shows both exports **prepared** (in-memory, no Tauri needed) but
+  not **saved** (the "Save to evidence directory" / "Save exports locally" buttons need Tauri
+  too, and were not exercised).
+- `docs/assets/README.md` — updated from capture instructions to captured status, with a full
+  honesty note on the browser-preview-vs-Tauri distinction above and a description of how each
+  file was produced, for future recaptures against a packaged build.
+- `README.md` §10 — the three screenshots are now genuinely embedded (`![...]()`), not shown as
+  an example code block; the "pending capture" note is gone. No other section touched.
+- No app code, Rust/Tauri, or dependency files changed. No product, scoring, Scope, or
+  Host/Route/Intel/Evidence/BOFA/SotyHUB logic changed.
+- Addresses #13 (only for the screenshot-existence part of that issue — see the PR for the exact
+  scope). Does not touch #20, #10, #16, or #17.
+
 ### Added (PR 56 — release/demo packaging, docs only)
 - `docs/demo-walkthrough.md` (NEW) — 11-step guided tour of `/soty` from opening the dashboard
   through Host/Route/Evidence Guard, OSINT Navigator, Evidence Snapshot, and local BOFA/SotyHUB
