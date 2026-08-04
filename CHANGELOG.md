@@ -75,6 +75,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   `npm audit fix --force`'s own suggested resolution is 7.11.0, which is *below* both the fix
   range and the new vulnerable range. Staying on 6.30.4. Closed Dependabot PRs #30 and #43
   (superseded / not proceeding) with this reasoning. Revisit once a version above 8.2.0 ships.
+  - **Update (2026-08-04, Dependabot PR #52, react-router-dom → 7.18.2):** re-checked the
+    GHSA-qwww-vcr4-c8h2 advisory directly — it is now explicitly scoped to apps using the
+    *unstable RSC APIs* only, and confirmed via `grep` that nothing in this codebase imports
+    `react-router`'s RSC entry points or uses `unstable_` RSC exports; this is a plain
+    client-side SPA router. In practice the vulnerable code path isn't reachable here. However:
+    the underlying `react-router` core package published the actual fix as **8.3.0**, but the
+    `react-router-dom` wrapper this app depends on has not been republished past **7.18.2**
+    (still inside the `>=7.12.0, <8.3.0` vulnerable range) — so there is still no version of the
+    package we actually import that satisfies both the old moderate-CVE fix and this advisory
+    at once. `npm audit --audit-level=high` (a required CI gate) fails on 7.18.2 regardless of
+    real-world reachability, since it matches version ranges, not usage. PR #52 left open,
+    unmerged, pending either an `react-router-dom` 8.x release or a deliberate, explicitly
+    scoped audit-exception decision (not made here — that changes a security gate, which is the
+    maintainer's call, not something to slip in as a routine dependency bump).
 - **TypeScript 7.0** — investigated the Dependabot PR bumping `typescript` 5.9.3 → 7.0.2 (skips
   the entire 6.x line). TypeScript 7.0 ("Corsa") is a complete native compiler rewrite in Go,
   reaching general availability 2026-07-08 — 20 days old at the time of this note. This
