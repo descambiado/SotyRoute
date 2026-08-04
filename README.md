@@ -189,10 +189,10 @@ All steps run locally. No network traffic. No BOFA launch. No SotyHUB upload.
 
 ## 10. Screenshots
 
-_Screenshots pending capture — none of the files below exist in the repo yet. See
-[docs/assets/README.md](docs/assets/README.md) for exact manual capture instructions, and
-[docs/demo-walkthrough.md](docs/demo-walkthrough.md) for the full guided tour to capture them
-from._
+_Real browser-preview captures of the live `/soty` UI — see
+[docs/assets/README.md](docs/assets/README.md) for exactly what each one shows, how they were
+captured, and an honesty note on what "browser preview, not packaged Tauri" means for the Guard
+panels. [docs/demo-walkthrough.md](docs/demo-walkthrough.md) has the full guided tour._
 
 | Screenshot | Path |
 |---|---|
@@ -200,13 +200,9 @@ from._
 | SOTY Score reacting to real Host/Route/Evidence Guard signals | `docs/assets/soty-score-real-signals.png` |
 | Evidence Snapshot + local BOFA/SotyHUB export panel | `docs/assets/soty-evidence-exports.png` |
 
-Once captured, embed with:
-
-```markdown
 ![SOTY Dashboard](docs/assets/soty-dashboard.png)
 ![SOTY Score — real signals](docs/assets/soty-score-real-signals.png)
 ![Evidence + local exports](docs/assets/soty-evidence-exports.png)
-```
 
 ## 11. Evidence files
 
