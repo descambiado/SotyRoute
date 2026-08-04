@@ -8,6 +8,22 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (PR 56 — release/demo packaging, docs only)
+- `docs/demo-walkthrough.md` (NEW) — 11-step guided tour of `/soty` from opening the dashboard
+  through Host/Route/Evidence Guard, OSINT Navigator, Evidence Snapshot, and local BOFA/SotyHUB
+  exports, plus a short pre-release checklist.
+- `docs/release-notes/v0.4.0-soty-demo.md` (NEW) — draft milestone note: Route/Host/Intel/
+  Evidence now read real signals, Scope remains demo by design, full safety-boundary recap, and
+  the deferred-items list (Scope architecture, react-router-dom 7.18.2, TypeScript 7.0, Tauri 2.x).
+- `docs/assets/README.md` — updated to the current 3 screenshot targets
+  (`soty-dashboard.png`, `soty-score-real-signals.png`, `soty-evidence-exports.png`) with capture
+  instructions reflecting today's dashboard (Host/Route/Evidence Guard, OSINT category filters).
+  No image files were generated — this repo does not ship placeholder or fabricated screenshots;
+  the three targets remain uncaptured pending a real manual capture pass.
+- `README.md` §10 — screenshot section updated to match the same 3 targets.
+- No code, scoring logic, Scope behavior, dependency versions, or system-check behavior changed
+  in this PR — documentation and release packaging only.
+
 ### Added (Evidence Guard)
 - `apps/desktop/src-tauri/src/evidence_guard.rs` (NEW) — `collect_evidence_guard_signals()`:
   real, read-only evidence-readiness signals. Reuses `evidence::load_settings()` and

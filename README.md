@@ -189,20 +189,23 @@ All steps run locally. No network traffic. No BOFA launch. No SotyHUB upload.
 
 ## 10. Screenshots
 
-_Screenshots to be added after first build. Place captures in `docs/assets/`._
+_Screenshots pending capture — none of the files below exist in the repo yet. See
+[docs/assets/README.md](docs/assets/README.md) for exact manual capture instructions, and
+[docs/demo-walkthrough.md](docs/demo-walkthrough.md) for the full guided tour to capture them
+from._
 
 | Screenshot | Path |
 |---|---|
 | SOTY Dashboard — score ring, sub-scores, deduction list | `docs/assets/soty-dashboard.png` |
-| Evidence Snapshot — local JSON/Markdown preview | `docs/assets/soty-evidence.png` |
-| BOFA Gate + Local Exports — gate decision and export panel | `docs/assets/soty-exports.png` |
+| SOTY Score reacting to real Host/Route/Evidence Guard signals | `docs/assets/soty-score-real-signals.png` |
+| Evidence Snapshot + local BOFA/SotyHUB export panel | `docs/assets/soty-evidence-exports.png` |
 
-See [docs/assets/README.md](docs/assets/README.md) for capture instructions.
+Once captured, embed with:
 
 ```markdown
 ![SOTY Dashboard](docs/assets/soty-dashboard.png)
-![Evidence Snapshot](docs/assets/soty-evidence.png)
-![BOFA Gate + Exports](docs/assets/soty-exports.png)
+![SOTY Score — real signals](docs/assets/soty-score-real-signals.png)
+![Evidence + local exports](docs/assets/soty-evidence-exports.png)
 ```
 
 ## 11. Evidence files
