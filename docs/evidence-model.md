@@ -102,6 +102,24 @@ interface SotyEvidenceSnapshot {
 | `bofa_export.json` file | ✅ PR 11 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
 | `sotyhub_export.json` file | ✅ PR 11 | Written to `~/.sotyroute/runs/<timestamp>_soty/` |
 
+## On-disk layout
+
+Every classic session (Observe / dry-run) writes a bundle to `%USERPROFILE%\.sotyroute\runs\<timestamp>_<mode>\`:
+
+- `session.json` — high-level session metadata
+- `checks.json` — system checks captured
+- `plan.json` — dry-run plan (read this before any real execution)
+- `warnings.json` — collected warnings
+- `evidence.md` — human-readable report
+
+The SOTY dashboard writes to a sibling directory, `%USERPROFILE%\.sotyroute\runs\<timestamp>_soty\`:
+
+- `soty_evidence.json` and `soty_evidence.md` — the SOTY Evidence Snapshot
+- `bofa_export.json` — the BOFA Gate decision record
+- `sotyhub_export.json` — the SotyHUB counts-only summary
+
+Everything stays on the local disk; nothing is uploaded.
+
 ---
 
 ## Files

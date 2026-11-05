@@ -1,272 +1,130 @@
+<div align="center">
+
 # SotyRoute
 
+**Preflight & evidence for authorized security work — for humans and AI agents.**
+
+*Before you operate — or before your agent does — become SOTY-ready.*
+
 [![CI](https://github.com/descambiado/SotyRoute/actions/workflows/ci.yml/badge.svg)](https://github.com/descambiado/SotyRoute/actions/workflows/ci.yml)
+[![Security Audit](https://github.com/descambiado/SotyRoute/actions/workflows/audit.yml/badge.svg)](https://github.com/descambiado/SotyRoute/actions/workflows/audit.yml)
 [![License: MIT](https://img.shields.io/github/license/descambiado/SotyRoute)](LICENSE)
-[![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6)](README.md#8-quickstart)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6)](#quickstart)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri-24C8DB)](https://tauri.app)
 [![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-DEA584)](https://www.rust-lang.org)
 
-**SotyRoute — SOTY-ready route, OPSEC and evidence control plane.**
+<img src="docs/assets/soty-hero.png" alt="SotyRoute dashboard: SOTY Score ring, five weighted sub-scores, demo presets and workflow strip" width="920">
 
-> *Before you operate, become SOTY-ready.*
+</div>
 
-SotyRoute Desktop is a **local, demo-ready** control plane for security engineers, detection engineers and pentesters working in **authorized** environments. It gives you an explainable readiness score (SOTY Score), a mission-to-route builder (Soty Agent), guided workflow presets (Route Packs), a safe host posture check (Host Guard), an authorized OSINT resource catalog, local evidence snapshots, and a BOFA Gate decision engine — all running **entirely on your machine** with no external calls.
+SotyRoute is a **local, explainable preflight** for security work you are authorized to do. It answers one question before anything runs: **are you SOTY-ready?**
 
-Maintained by [@descambiado](https://github.com/descambiado) as part of the **SotyHUB** ecosystem (alongside **BOFA**).
+Is your route sane? Is your host in a defensible posture? Is your intel use responsible? Is your evidence ready? And, once target declaration lands, is your target inside the scope you declared? You get one score (0–100), every deduction comes with a **reason and a recommended fix**, a session trail lands on disk — and **nothing is sent anywhere**.
 
-> **Status — PR 1–15 shipped.**
-> The full SOTY direction (PRs 2–15) is implemented.
-> SOTY Score engine · Route Packs · Mission-to-Route Builder ·
-> **Host Guard (real, read-only signals from your machine)** ·
-> Ethical OSINT Navigator (35-resource catalog) · Evidence Snapshots · BOFA Gate ·
-> SotyHUB Local Exports · Visual/demo polish · Security dependency maintenance.
->
-> The SOTY Score itself (route/scope/intel/evidence sub-scores) still runs against demo
-> presets — only Host Guard reads the real local machine so far.
->
-> **Upcoming:** optional SotyHUB sync integration · real signal collection for the
-> remaining SOTY Score sub-scores.
->
-> See [docs/roadmap.md](docs/roadmap.md).
+> **SOTY** can mean Student, Son or Shooter of the Year — or **Security Operator of the Year**: someone who operates with route, discipline, OPSEC, scope, evidence and technical precision.
 
----
+Maintained by [@descambiado](https://github.com/descambiado) as part of the **SotyHUB** ecosystem, alongside [BOFA](https://github.com/descambiado/bofa).
 
-## 0. What SOTY means
+## Why it exists
 
-**SOTY** can mean Student of the Year, Son of the Year, Shooter of the Year — or **Security
-Operator of the Year**. In SotyRoute, **SOTY** means someone who operates with **route,
-discipline, OPSEC, scope, evidence and technical precision**.
+- **Before you operate** — get your posture in order *before* something leaks, not after.
+- **Before your agent operates** — AI agents already run security tooling. SotyRoute is being built so an agent can ask the same deterministic questions through a **local MCP server** ([planned](docs/ai-integration.md)).
+- **After you operate** — an auditable record (`session.json`, `evidence.md`, `soty_evidence.json`) you can hand to a client or a reviewer.
 
-Becoming *SOTY-ready* is the whole point: get your posture in order **before** you operate, not
-after something leaks.
+## What you get
 
-## 1. What is SotyRoute?
-
-SotyRoute is not a VPN. It is not Tor. It does not promise anonymity.
-
-It is an **AI-assisted OPSEC route builder** built on a **preflight + evidence layer** for network
-operations:
-
-- Computes your **SOTY Score** — an explainable readiness rating across route, host, scope, intel and evidence.
-- Matches you to a **Route Pack** — a pre-set workflow bundle for your class of work.
-- Builds a **Route Card** from your mission — mode, required checks, allowed/disallowed modules, next safe actions.
-- Runs a **Host Guard** posture check — read-only signals, no system mutations.
-- Surfaces an **Ethical OSINT Navigator** — a local authorized resource catalog with confirmation gates.
-- Assembles a **local Evidence Snapshot** — redacted, structured, no external write.
-- Evaluates a **BOFA Gate** decision and writes **local export files** (`bofa_export.json`, `sotyhub_export.json`).
-
-## 2. Why not just use a VPN?
-
-| A VPN gives you | SotyRoute gives you |
+| | |
 |---|---|
-| An encrypted tunnel | A documented routing posture |
-| Maybe a kill-switch | Scope-bound profiles per lab |
-| Maybe a leak test page | DNS / routing / firewall checks captured as evidence |
-| No idea what your tooling will do | A dry-run plan you read **before** execution |
-| No audit trail | `session.json` + `evidence.md` per run |
+| **SOTY Score** | One explainable 0–100 score across five weighted sub-scores — Route 30 %, Host 20 %, Scope 25 %, Intel 10 %, Evidence 15 % — and a state: `SOTY_READY`, `SOTY_WARN`, `SOTY_EXPOSED`, `SOTY_DIRTY` or `SOTY_BLOCKED`. |
+| **Real, read-only Guards** | **Host Guard** (firewall, Defender, proxy, tunnel processes, elevation), **Route Guard** (DNS, opt-in public IP, tunnel, proxy, route table) and **Evidence Guard** (evidence directory readiness, recorded sessions, export settings). They read; they never change anything. |
+| **Route Packs + Soty Agent** | 8 workflow presets (Student, Privacy, OSINT, Purple, Lab, Travel, Dirty Host Check, BOFA) and a deterministic mission-to-route builder that outputs a Route Card. No external AI call. |
+| **Ethical OSINT Navigator** | A 35-resource local catalog with risk filters, confirmation gates and blocked-by-policy entries. No scraping, no embedded WebView. |
+| **Evidence & exports** | Local evidence snapshots (JSON/Markdown) plus `bofa_export.json` and `sotyhub_export.json`, written to `~/.sotyroute/runs/` only. |
+| **BOFA Gate** | A deterministic, local go/no-go decision for BOFA-style workflows. It does not launch BOFA. |
+| **Classic mode** | Observe (real, non-destructive) and a dry-run planner for Tor / WireGuard / SOCKS5 / Lab profiles, with YAML/JSON profile validation. |
 
-A VPN does not know whether you are inside an authorized lab. SotyRoute does.
+**Honest status:** the Route, Host, Intel and Evidence sub-scores read real signals. **Scope is still demo-based, by design**, until target declaration lands ([design](docs/soty-scope-architecture.md)). Per-sub-score detail: [docs/soty-score.md](docs/soty-score.md).
 
-## 3. Why better than Nipe?
+## See it
 
-[Nipe](https://github.com/htrgouvea/nipe) is a Perl script that routes Linux traffic through Tor. SotyRoute is broader and safer:
+| Score & workflow | Real-signal Guards | Evidence & exports |
+|:---:|:---:|:---:|
+| [<img src="docs/assets/soty-dashboard.png" width="260" alt="SOTY dashboard">](docs/assets/soty-dashboard.png) | [<img src="docs/assets/soty-score-real-signals.png" width="260" alt="Guards feeding the score">](docs/assets/soty-score-real-signals.png) | [<img src="docs/assets/soty-evidence-exports.png" width="260" alt="Evidence snapshot, BOFA Gate and local exports">](docs/assets/soty-evidence-exports.png) |
 
-| Feature | Nipe | SotyRoute Desktop |
-|---|---|---|
-| Windows GUI | no | **yes** |
-| Multi-transport (Tor / WG / SOCKS5 / Observe / Lab) | no | **yes** |
-| YAML profiles | no | **yes** |
-| Dry-run planner | no | **yes** |
-| Evidence reports | no | **yes** |
-| Lab scope validation | no | **yes** |
-| BOFA / SotyHUB exports | no | **yes** |
-| Honest copy about anonymity | partial | **yes** |
-| Reversible / fail-closed design | no | **goal** |
+*Browser-preview captures of the live UI (click to enlarge). In the packaged desktop app the Guard panels show real values from your machine; in a plain browser they fall back gracefully — see [docs/assets/README.md](docs/assets/README.md).*
 
-## 4. Core features (v0.1.0 foundation)
+## Quickstart
 
-- **Dashboard** with current mode, profile, routing/DNS/tunnel/kill-switch status.
-- **Profiles** page: load, validate, import/export YAML/JSON.
-- **Evidence** page: browse sessions, open `evidence.md`, export BOFA / SotyHUB JSON.
-- **Doctor** page: Windows version, admin status, interfaces, DNS, Tor / WireGuard detection.
-- **Settings**: evidence directory, default mode, telemetry off, theme.
-- **Observe mode**: non-destructive system snapshot.
-- **Dry-run** for Tor / WireGuard / SOCKS5 / Lab.
-- **Local evidence directory**: `%USERPROFILE%\.sotyroute\runs\<timestamp>_<mode>\`.
-
-## 5. Windows-first architecture
-
-```
-Desktop UI (Tauri + React, no admin)
-        │  Tauri IPC
-        ▼
-Local Agent  (v0.1.0 stub; v0.2.0 Windows Service, elevated)
-        │
-        ▼
-Core Engine  (profiles · checks · planner · evidence · exports)
-```
-
-See [docs/windows-architecture.md](docs/windows-architecture.md) and [docs/architecture.md](docs/architecture.md).
-
-## 6. Safety model
-
-- **UI never runs as admin.** Privileged actions are reserved for the agent (future).
-- **Dry-run by default** for any action that would mutate the system.
-- **Fail-closed** design goal: if a check fails, the operation does not proceed.
-- **Evidence first**: every session writes `session.json`, `checks.json`, `plan.json`, `evidence.md`.
-- **No third-party network changes** in v0.1.0.
-
-See [docs/threat-model.md](docs/threat-model.md).
-
-## 7. What SotyRoute does **not** do
-
-These boundaries are permanent and apply to the full SOTY direction:
-
-- It is **not** a VPN provider. No servers are shipped.
-- It is **not** Tor.
-- It does **not** guarantee anonymity.
-- It is **not** an antivirus or EDR.
-- It does **not** launch BOFA or execute BOFA modules.
-- It does **not** upload to SotyHUB or call external APIs.
-- It does **not** scrape external sites or embed WebViews.
-- It does **not** automate credential-dump searches, doxxing, or leak-site access.
-- It does **not** evade law enforcement or ship offensive payloads.
-- It does **not** mutate system settings or network configuration in the current release.
-- WireGuard requires an existing server/configuration you own or are authorized to use.
-- Tor is not a VPN; SOCKS5 is not honored by every application.
-- Local export files (`bofa_export.json`, `sotyhub_export.json`) are written to `~/.sotyroute/runs/` **only** — no upload, no sync, no external destination.
-
-SotyRoute is for **authorized labs, owned assets, defensive research and written-scope
-engagements** only. See [docs/legal-scope.md](docs/legal-scope.md).
-
-## 8. Quickstart
-
-**Prerequisites**
-
-- Windows 10/11 (x64)
-- [Node.js](https://nodejs.org/) 20.19+ or 22.12+ (required by Vite 8 / Rolldown)
-- [Rust](https://www.rust-lang.org/tools/install) stable (`rustup`)
-- Microsoft C++ Build Tools (installed by Rust on Windows)
-- WebView2 runtime (preinstalled on Win11)
-
-**Install & run dev**
+**Requirements:** Windows 10/11 x64 · [Node.js](https://nodejs.org/) 20.19+ or 22.12+ · [Rust](https://www.rust-lang.org/tools/install) stable · Microsoft C++ Build Tools · WebView2 (preinstalled on Windows 11).
 
 ```powershell
-cd apps/desktop
+git clone https://github.com/descambiado/SotyRoute.git
+cd SotyRoute/apps/desktop
 npm install
-npm run tauri dev
+npm run tauri dev        # full desktop app; the first run compiles the Rust backend
 ```
 
-The first run will compile the Rust backend (a few minutes). Subsequent runs are fast.
+- **Just want to look around?** `npm run dev` serves the UI at <http://localhost:1420/#/soty>. Panels that need the Tauri backend (the Guards, Profiles, Settings) show a graceful fallback in a plain browser.
+- **Build an installer:** `npm run tauri build` → `apps/desktop/src-tauri/target/release/bundle/msi/`.
+- **Releases:** there is no published release yet. The first one will ship an MSI with SHA-256 checksums; the release workflow already builds it on every `v*.*.*` tag.
 
-**Build a release MSI**
+Then take the guided tour: [docs/demo-walkthrough.md](docs/demo-walkthrough.md) (11 steps).
 
-```powershell
-cd apps/desktop
-npm run tauri build
-```
+## Use with AI
 
-Artifacts: `apps/desktop/src-tauri/target/release/bundle/msi/`.
+SotyRoute never calls an AI: there are **no LLM calls, no external AI APIs and no telemetry**, by design. The integration runs the other way — **your AI agent calls SotyRoute.**
 
-> If Tauri complains about missing icons, generate them with `npx @tauri-apps/cli icon path/to/logo.png` and re-run.
-
-## 9. Demo walkthrough
-
-Navigate to **`/soty`** in the running app and follow these steps:
-
-| Step | Action | What you see |
-|---|---|---|
-| 1 | Pick a **demo preset** (Soty-Ready / Warn / Exposed / Dirty / Blocked) | SOTY Score ring + state badge updates |
-| 2 | Select a **Route Pack** | Score context syncs; compatible missions appear |
-| 3 | Pick a **mission** and click **Build Mission Route** | Route Card: mode, checks, allowed/disallowed modules, next actions |
-| 4 | Click **Run Host Guard** | 7-check posture panel — reads real firewall, Defender, proxy and process signals from this machine (read-only) |
-| 5 | Click **Open OSINT Navigator** | 35-resource authorized catalog; category/risk filters; confirmation gates |
-| 6 | Click **Generate Evidence** | Local `SotyEvidenceSnapshot` — JSON/Markdown copy-to-clipboard |
-| 7 | Click **Open BOFA Gate** | Local gate decision (allowed / warning / blocked); module lists |
-| 8 | Click **Prepare BOFA export** + **Prepare SotyHUB export** + **Save exports locally** | `bofa_export.json` + `sotyhub_export.json` written to `~/.sotyroute/runs/` |
-
-All steps run locally. No network traffic. No BOFA launch. No SotyHUB upload.
-
-## 10. Screenshots
-
-_Real browser-preview captures of the live `/soty` UI — see
-[docs/assets/README.md](docs/assets/README.md) for exactly what each one shows, how they were
-captured, and an honesty note on what "browser preview, not packaged Tauri" means for the Guard
-panels. [docs/demo-walkthrough.md](docs/demo-walkthrough.md) has the full guided tour._
-
-| Screenshot | Path |
+| | Status |
 |---|---|
-| SOTY Dashboard — score ring, sub-scores, deduction list | `docs/assets/soty-dashboard.png` |
-| SOTY Score reacting to real Host/Route/Evidence Guard signals | `docs/assets/soty-score-real-signals.png` |
-| Evidence Snapshot + local BOFA/SotyHUB export panel | `docs/assets/soty-evidence-exports.png` |
+| **Local MCP server** (stdio, read-only tools) so assistants like Claude, Cursor or VS Code can ask for a SOTY Score, a Route Card, a BOFA Gate decision or — once Scope lands — a scope check, *before* they act | **Planned** — [docs/ai-integration.md](docs/ai-integration.md) |
+| **AI-friendly repo:** [`AGENTS.md`](AGENTS.md) (build, test, safety rules, conventions) and [`llms.txt`](llms.txt) (documentation map) | **Available** |
+| **Machine-readable outputs:** `soty_evidence.json`, `bofa_export.json` and `sotyhub_export.json` are plain JSON | **Available** |
 
-![SOTY Dashboard](docs/assets/soty-dashboard.png)
-![SOTY Score — real signals](docs/assets/soty-score-real-signals.png)
-![Evidence + local exports](docs/assets/soty-evidence-exports.png)
+> **Advisory, not enforcement.** A tool an agent *chooses* to call can inform its decisions; it cannot stop it from acting. Once Scope lands, "in scope" will mean "inside the lists *you* declared" — SotyRoute cannot verify real-world authorization.
 
-## 11. Evidence files
+## How it works
 
-Every run writes to `%USERPROFILE%\.sotyroute\runs\<timestamp>_<mode>\`:
+```mermaid
+flowchart LR
+  subgraph LOCAL["Your machine · nothing is sent anywhere"]
+    UI["Desktop UI<br/>Tauri + React"] --> ENGINE["SOTY engine<br/>pure, deterministic TypeScript"]
+    UI -->|"read-only IPC"| GUARDS["Guards · Rust<br/>Host · Route · Evidence"]
+    GUARDS --> ENGINE
+    ENGINE --> FILES[("Evidence files<br/>~/.sotyroute/runs")]
+  end
+  AGENT["AI agent<br/>via local MCP · planned"] -.-> ENGINE
+```
 
-- `session.json` — high-level session metadata
-- `checks.json` — system checks captured
-- `plan.json` — dry-run plan (read this before any real execution)
-- `warnings.json` — collected warnings
-- `evidence.md` — human-readable report
-- `soty_evidence.json` — SOTY Evidence Snapshot (JSON, PR 10)
-- `soty_evidence.md` — SOTY Evidence Snapshot (Markdown, PR 10)
-- `bofa_export.json` — BOFA Gate decision record (PR 11)
-- `sotyhub_export.json` — SotyHUB counts-only summary (PR 11)
+The UI never runs elevated, the Guards only read, and the scoring engine is pure functions with no I/O. More in [docs/architecture.md](docs/architecture.md).
 
-## 12. BOFA integration
+## Safety model
 
-SotyRoute emits a `bofa_export.json` per session intended as a **preflight signal**: BOFA workflows can refuse to launch offensive modules until SotyRoute reports `preflight_passed: true` for a matching profile. The BOFA Gate decision engine is local and deterministic — it does not launch BOFA and does not call external services.
+- The UI never runs as administrator; the Guards only **read** system state.
+- **No telemetry and no background network traffic.** The only outbound requests are explicit and operator-initiated: an opt-in public-IP lookup (off by default) and a TCP connect probe command that is not exposed in the UI yet.
+- Evidence and export files are written **only** to `%USERPROFILE%\.sotyroute\runs\`.
+- Anything that could mutate the system is dry-run first; fail-closed is the design goal.
+- Scope is **operator-declared and advisory** — and today only *declared*: profiles carry allow/block lists and lab profiles must name at least one allowed target, but SotyRoute does **not yet compare a real target against those lists** (the Scope sub-score is demo-based; target matching is [planned](docs/soty-scope-architecture.md)). When it lands it will compare strings only and never probe targets.
 
-See [docs/bofa-gate.md](docs/bofa-gate.md) and [docs/bofa-integration.md](docs/bofa-integration.md).
+**What SotyRoute is not:** a VPN provider (no servers) · Tor · an anonymity guarantee · an antivirus or EDR · a BOFA launcher · a SotyHUB uploader · a scraper · an offensive tool. It does not mutate system settings or network configuration in the current release.
 
-## 13. SotyHUB integration
+For **authorized labs, owned assets, defensive research and written-scope engagements only** — see [docs/legal-scope.md](docs/legal-scope.md) and [docs/threat-model.md](docs/threat-model.md).
 
-SotyRoute writes a local `sotyhub_export.json` with counts-only summaries (no raw host data, no OSINT query content, no credentials). No upload is performed. No SotyHUB API is called. The file is a structured local record ready for future optional SotyHUB sync.
+## Documentation
 
-See [docs/sotyhub-export.md](docs/sotyhub-export.md) and [docs/sotyhub-integration.md](docs/sotyhub-integration.md).
+Everything is indexed in **[docs/README.md](docs/README.md)**. Good starting points:
 
-## 14. Roadmap
+| Read | If you want to |
+|---|---|
+| [Demo walkthrough](docs/demo-walkthrough.md) | try the SOTY dashboard end to end |
+| [SOTY Score](docs/soty-score.md) | understand every sub-score, deduction and state |
+| [Architecture](docs/architecture.md) · [Threat model](docs/threat-model.md) | see how it is built and what it does *not* protect against |
+| [AI & MCP integration](docs/ai-integration.md) | plug SotyRoute into an AI agent (planned) |
+| [Comparison](docs/comparison.md) | see how it differs from a VPN, Nipe, proxychains or manual setup |
+| [Roadmap](docs/roadmap.md) · [Changelog](CHANGELOG.md) | see what is shipped and what is next |
 
-See [docs/roadmap.md](docs/roadmap.md). Summary:
+## Contributing & community
 
-- **v0.1.0** — Desktop UI, observe + dry-run, evidence, exports.
-- **v0.2.0** — Schema versioning, public-IP check, TCP probe; Windows Service agent groundwork. *(current)*
-- **v0.3.0 — SOTY direction** — SOTY Score · Soty Agent (Route Card) · Route Packs · Host Guard (demo mode) · Ethical OSINT Navigator · Evidence Snapshots · BOFA Gate + SotyHUB local exports · Visual/demo polish. **Shipped PRs 2–12.**
-- **Upcoming** — Read-only real Host Guard Tauri signals; security dependency updates; optional SotyHUB sync.
-- **v0.4.0** — WFP policy engine research, signed evidence bundles, BOFA preflight live.
-- **v1.0.0** — Stable agent, audited rollback, signed releases.
-
-## 15. Legal & ethical scope
-
-SotyRoute is for **authorized** security work only: your own assets, your own lab, or systems for which you hold written authorization. See [docs/legal-scope.md](docs/legal-scope.md).
-
-## 16. SOTY Score
-
-An **explainable readiness score**. Five sub-scores — **Route, Host, Scope, Intel, Evidence** —
-roll up into an **Overall SOTY Score** and a single state: `SOTY_READY`, `SOTY_WARN`,
-`SOTY_EXPOSED`, `SOTY_DIRTY` or `SOTY_BLOCKED`. Every deduction carries a **reason** and a
-**recommended fix** — the score is never a mystery number.
-
-See [docs/soty-score.md](docs/soty-score.md).
-
-## 17. Soty Agent (Mission-to-Route Builder)
-
-A **deterministic local route builder**. Pick or type a mission — *investigate a domain*, *work from public WiFi*, *prepare a privacy route*, *launch BOFA* — and the agent produces a **Route Card**: recommended mode, required checks, tools/resources, risk warnings, scope requirements, evidence settings, allowed/disallowed BOFA modules and next safe actions. **Recommends only** — no external AI call, no system mutations, explicit confirmation required.
-
-See [docs/soty-agent.md](docs/soty-agent.md).
-
-## 18. Route Packs
-
-Predefined bundles that pre-set mode, checks, evidence level and BOFA mode for a class of work:
-**Student, Privacy, OSINT, Purple, Lab, Travel, Dirty Host Check** and **BOFA** routes. Packs
-compose the existing YAML profile schema — they narrow posture, they never widen scope.
-
-See [docs/route-packs.md](docs/route-packs.md).
+Contributions follow the same standards as the tool: read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) first. Ideas and questions are welcome in [Discussions](https://github.com/descambiado/SotyRoute/discussions); bugs and feature requests go to [Issues](https://github.com/descambiado/SotyRoute/issues); vulnerabilities go through [private security advisories](SECURITY.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 

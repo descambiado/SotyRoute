@@ -1,0 +1,39 @@
+# SotyRoute
+
+> A local, explainable preflight and evidence layer for authorized security work. It scores route, host, scope, intel and evidence readiness (the SOTY Score), runs read-only host/route/evidence checks, builds mission route cards, and keeps a local audit trail. Desktop app (Tauri + Rust + React), Windows-first, 100% local. An MCP server for AI agents is planned, not implemented.
+
+Key facts for AI tools: the app makes no LLM calls and sends no telemetry; AI agents are meant to call SotyRoute, not the reverse. Scope is meant to be operator-declared and advisory; today the Scope sub-score is still demo-based by design and no target matching exists yet. For authorized labs, owned assets and written-scope engagements only.
+
+## Start here
+
+- [README](https://raw.githubusercontent.com/descambiado/SotyRoute/main/README.md): what it is, what ships today, quickstart, safety model
+- [AGENTS.md](https://raw.githubusercontent.com/descambiado/SotyRoute/main/AGENTS.md): build and test commands, architecture conventions, hard safety rules, PR format
+- [Documentation index](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/README.md): every doc, grouped
+
+## Concepts
+
+- [SOTY Score](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/soty-score.md): sub-scores, weights, deductions, states, which signals are real
+- [Route Packs](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/route-packs.md): the 8 workflow presets
+- [Soty Agent](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/soty-agent.md): deterministic mission-to-route builder (no external AI)
+- [Host Guard](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/host-guard.md): read-only host posture checks
+- [Evidence model](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/evidence-model.md): evidence snapshots and on-disk layout
+- [BOFA Gate](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/bofa-gate.md): local go/no-go decision (does not launch BOFA)
+- [Ethical OSINT Navigator](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/osint-navigator.md): local resource catalog with blocked-by-policy entries
+
+## Architecture and safety
+
+- [Architecture](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/architecture.md): layers, IPC contract, data flow
+- [Threat model](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/threat-model.md): what it helps with and what it does not protect against
+- [Legal and ethical scope](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/legal-scope.md): authorized use only
+- [Scope architecture](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/soty-scope-architecture.md): design for making the Scope sub-score real
+
+## AI integration
+
+- [AI and MCP integration](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/ai-integration.md): planned local MCP server, security model, limits
+
+## Optional
+
+- [Roadmap](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/roadmap.md)
+- [Comparison with VPNs, Nipe, proxychains](https://raw.githubusercontent.com/descambiado/SotyRoute/main/docs/comparison.md)
+- [Changelog](https://raw.githubusercontent.com/descambiado/SotyRoute/main/CHANGELOG.md)
+- [Contributing](https://raw.githubusercontent.com/descambiado/SotyRoute/main/CONTRIBUTING.md)

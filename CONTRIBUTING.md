@@ -26,7 +26,8 @@ First run compiles the Rust backend (~3 min). Subsequent runs are fast.
 - Strict TypeScript (`"strict": true` in tsconfig).
 - No `any` casts without a comment explaining why.
 - Components receive typed props; no runtime prop munging.
-- `api.ts` is the only file that calls `invoke()` — UI components import from `api.ts`.
+- Tauri `invoke()` calls live only in `lib/api.ts` and the `lib/*Real.ts` / `lib/*Persistence.ts` wrappers — UI components never call `invoke()` directly.
+- Scoring rules, mappers and builders in `lib/` are pure functions with unit tests; see [AGENTS.md](AGENTS.md) for the full conventions.
 
 ### Rust
 
@@ -57,7 +58,7 @@ First run compiles the Rust backend (~3 min). Subsequent runs are fast.
 ```
 
 Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `security`, `test`.  
-Scopes: `ui`, `backend`, `evidence`, `profiles`, `agent`, `ci`, `docs`.
+Scopes: `soty`, `ui`, `backend`, `evidence`, `profiles`, `agent`, `ci`, `docs`, `deps`.
 
 Examples:
 ```
