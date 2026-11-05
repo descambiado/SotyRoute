@@ -27,7 +27,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   first-release tracks added, issue links, and a non-goal that SotyRoute never calls an AI.
 - `docs/architecture.md` — React 19, the full IPC command table, and a SOTY layer section.
   `docs/comparison.md` — added the "just use a VPN" table, reworded so it no longer claims SotyRoute
-  knows whether you are authorized (it only checks the scope you declare). `docs/evidence-model.md`
+  knows whether you are authorized (scope matching is planned; today profiles only declare and
+  validate scope). `docs/evidence-model.md`
   — on-disk layout. `CONTRIBUTING.md` — corrected which files may call `invoke()`; added the
   `soty` and `deps` commit scopes.
 - No code, scoring, dependency or workflow changes.

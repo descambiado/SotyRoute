@@ -2,7 +2,7 @@
 
 > A local, explainable preflight and evidence layer for authorized security work. It scores route, host, scope, intel and evidence readiness (the SOTY Score), runs read-only host/route/evidence checks, builds mission route cards, and keeps a local audit trail. Desktop app (Tauri + Rust + React), Windows-first, 100% local. An MCP server for AI agents is planned, not implemented.
 
-Key facts for AI tools: the app makes no LLM calls and sends no telemetry; AI agents are meant to call SotyRoute, not the reverse. Scope is operator-declared and advisory. The Scope sub-score is still demo-based by design. For authorized labs, owned assets and written-scope engagements only.
+Key facts for AI tools: the app makes no LLM calls and sends no telemetry; AI agents are meant to call SotyRoute, not the reverse. Scope is meant to be operator-declared and advisory; today the Scope sub-score is still demo-based by design and no target matching exists yet. For authorized labs, owned assets and written-scope engagements only.
 
 ## Start here
 

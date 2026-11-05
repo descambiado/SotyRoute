@@ -50,7 +50,7 @@ CI (`.github/workflows/ci.yml`) must be green: **Frontend type-check**, **Fronte
 - **No system mutation** in the current release; anything that could mutate state is dry-run first. Never remove a dry-run gate.
 - **No offensive automation**, no target probing, no credential/leak-site searching, no "anonymity" claims.
 - **Never fabricate** signals, screenshots or test results. Unknown is `null`, not a guessed pass or fail. Screenshots must be real captures. Say plainly what you could not verify.
-- Scope is operator-declared and advisory. Read [docs/soty-scope-architecture.md](docs/soty-scope-architecture.md) before touching anything Scope-related — Scope is intentionally still demo-based.
+- Scope is meant to be operator-declared and advisory. Today the Scope sub-score is still demo-based, by design, and no code compares a target against allow/block lists. Read [docs/soty-scope-architecture.md](docs/soty-scope-architecture.md) before touching anything Scope-related.
 
 ## Architecture conventions
 

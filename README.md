@@ -19,7 +19,7 @@
 
 SotyRoute is a **local, explainable preflight** for security work you are authorized to do. It answers one question before anything runs: **are you SOTY-ready?**
 
-Is your route sane? Is your host in a defensible posture? Is your target inside the scope you declared? Is your intel use responsible? Is your evidence ready? You get one score (0–100), every deduction comes with a **reason and a recommended fix**, a session trail lands on disk — and **nothing is sent anywhere**.
+Is your route sane? Is your host in a defensible posture? Is your intel use responsible? Is your evidence ready? And, once target declaration lands, is your target inside the scope you declared? You get one score (0–100), every deduction comes with a **reason and a recommended fix**, a session trail lands on disk — and **nothing is sent anywhere**.
 
 > **SOTY** can mean Student, Son or Shooter of the Year — or **Security Operator of the Year**: someone who operates with route, discipline, OPSEC, scope, evidence and technical precision.
 
@@ -80,7 +80,7 @@ SotyRoute never calls an AI: there are **no LLM calls, no external AI APIs and n
 | **AI-friendly repo:** [`AGENTS.md`](AGENTS.md) (build, test, safety rules, conventions) and [`llms.txt`](llms.txt) (documentation map) | **Available** |
 | **Machine-readable outputs:** `soty_evidence.json`, `bofa_export.json` and `sotyhub_export.json` are plain JSON | **Available** |
 
-> **Advisory, not enforcement.** A tool an agent *chooses* to call can inform its decisions; it cannot stop it from acting. "In scope" means "inside the lists *you* declared" — SotyRoute cannot verify real-world authorization.
+> **Advisory, not enforcement.** A tool an agent *chooses* to call can inform its decisions; it cannot stop it from acting. Once Scope lands, "in scope" will mean "inside the lists *you* declared" — SotyRoute cannot verify real-world authorization.
 
 ## How it works
 
@@ -103,7 +103,7 @@ The UI never runs elevated, the Guards only read, and the scoring engine is pure
 - **No telemetry and no background network traffic.** The only outbound requests are explicit and operator-initiated: an opt-in public-IP lookup (off by default) and a TCP connect probe command that is not exposed in the UI yet.
 - Evidence and export files are written **only** to `%USERPROFILE%\.sotyroute\runs\`.
 - Anything that could mutate the system is dry-run first; fail-closed is the design goal.
-- Scope is **operator-declared and advisory**: SotyRoute checks your declared allow/block lists and does not probe targets.
+- Scope is **operator-declared and advisory** — and today only *declared*: profiles carry allow/block lists and lab profiles must name at least one allowed target, but SotyRoute does **not yet compare a real target against those lists** (the Scope sub-score is demo-based; target matching is [planned](docs/soty-scope-architecture.md)). When it lands it will compare strings only and never probe targets.
 
 **What SotyRoute is not:** a VPN provider (no servers) · Tor · an anonymity guarantee · an antivirus or EDR · a BOFA launcher · a SotyHUB uploader · a scraper · an offensive tool. It does not mutate system settings or network configuration in the current release.
 
