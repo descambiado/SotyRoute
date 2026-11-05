@@ -8,6 +8,30 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (showcase & AI-ready documentation, docs only)
+- `README.md` — rewritten (273 → ~150 lines): hero image, a "preflight for humans and AI agents"
+  pitch, an honest "what you get" table (Scope is still demo), real captures, a Quickstart that
+  says plainly there is no published release yet, a "Use with AI" section, a Mermaid architecture
+  diagram and a precise safety model (including the two operator-initiated network features that
+  do exist). The VPN comparison moved to `docs/comparison.md` and the evidence file list to
+  `docs/evidence-model.md` — nothing was dropped.
+- `docs/README.md` (NEW) — documentation index. `AGENTS.md` (NEW) and `CLAUDE.md` (NEW, imports
+  `AGENTS.md`) — build and test commands, architecture conventions, hard safety rules and the PR
+  format for AI coding agents and humans. `llms.txt` (NEW) — documentation map for AI tools.
+- `docs/ai-integration.md` (NEW) — **status: planned**. Principle (AI stays outside; agents call
+  SotyRoute), a proposed read-only MCP tool surface, security model, limits (advisory, not
+  enforcement) and distribution plan. Nothing in it is implemented.
+- `docs/assets/soty-hero.png` (NEW) — the top 768 px of the real `soty-dashboard.png` capture,
+  cropped; not re-rendered or edited.
+- `docs/roadmap.md` — refreshed: v0.1.0 and the SOTY track marked as in the codebase, Scope / MCP /
+  first-release tracks added, issue links, and a non-goal that SotyRoute never calls an AI.
+- `docs/architecture.md` — React 19, the full IPC command table, and a SOTY layer section.
+  `docs/comparison.md` — added the "just use a VPN" table, reworded so it no longer claims SotyRoute
+  knows whether you are authorized (it only checks the scope you declare). `docs/evidence-model.md`
+  — on-disk layout. `CONTRIBUTING.md` — corrected which files may call `invoke()`; added the
+  `soty` and `deps` commit scopes.
+- No code, scoring, dependency or workflow changes.
+
 ### Added (PR 59 — shared active-profile state, infrastructure only)
 - `apps/desktop/src/lib/activeProfileState.ts` (NEW) — pure state-transition logic:
   `activeProfileReducer` (`SET`/`CLEAR`), `INITIAL_ACTIVE_PROFILE_STATE`, and
@@ -215,6 +239,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
     unmerged, pending either an `react-router-dom` 8.x release or a deliberate, explicitly
     scoped audit-exception decision (not made here — that changes a security gate, which is the
     maintainer's call, not something to slip in as a routine dependency bump).
+  - **Resolved (2026-11-05):** `main` moved to react-router-dom **7.18.4** on 2026-09-27
+    (`b06e75c`, a security fix by the maintainer), and `npm audit` does not flag react-router at
+    that version. PR #52 (7.18.2) is obsolete. No audit-gate exception was needed.
 - **TypeScript 7.0** — investigated the Dependabot PR bumping `typescript` 5.9.3 → 7.0.2 (skips
   the entire 6.x line). TypeScript 7.0 ("Corsa") is a complete native compiler rewrite in Go,
   reaching general availability 2026-07-08 — 20 days old at the time of this note. This

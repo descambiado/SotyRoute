@@ -1,5 +1,17 @@
 # Comparison
 
+## SotyRoute vs just using a VPN
+
+| A VPN gives you | SotyRoute gives you |
+|---|---|
+| An encrypted tunnel | A documented routing posture |
+| Maybe a kill-switch | Scope-bound profiles per lab |
+| Maybe a leak test page | DNS / routing / firewall checks captured as evidence |
+| No idea what your tooling will do | A dry-run plan you read **before** execution |
+| No audit trail | `session.json` + `evidence.md` per run |
+
+A VPN has no notion of your scope. SotyRoute holds the scope **you declare** and checks against it — it cannot verify that you are actually authorized, only that you are staying inside what you said you were.
+
 ## SotyRoute vs Nipe vs Conventional VPN
 
 | Feature | Nipe | Conventional VPN | SotyRoute Desktop |

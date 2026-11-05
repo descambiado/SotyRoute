@@ -6,7 +6,7 @@ SotyRoute Desktop is built as three deliberately separated layers. The separatio
 
 ### 1. Desktop UI (`apps/desktop`)
 
-- **Stack:** Tauri 1.5 + React 18 + TypeScript + Vite.
+- **Stack:** Tauri 1.5 + React 19 + TypeScript + Vite.
 - **Privileges:** standard user. Never elevated.
 - **Responsibilities:**
   - Render dashboard, profiles, evidence, doctor, settings.
@@ -39,24 +39,40 @@ In **v0.1.0** the agent is **stubbed in-process** inside the Tauri Rust backend 
 
 In v0.1.0 the core lives inline in `src-tauri/src/{profiles,planner,evidence,system}.rs` to keep the build single-crate. It will be extracted into its own crate in v0.2.0.
 
-## IPC contract (v0.1.0)
+## IPC contract
 
-Tauri commands exposed to the UI:
+Tauri commands exposed to the UI (registered in `src-tauri/src/main.rs`):
 
-| Command | Returns | Mutates system? |
+| Command | Returns | Effect on the system |
 |---|---|---|
-| `run_doctor` | `DoctorReport` | no |
-| `list_profiles` | `Profile[]` | no |
-| `load_profile(path)` | `Profile` | no |
-| `validate_profile(profile)` | `ValidationResult` | no |
-| `start_observe(profile)` | `SessionSummary` | no — only reads + writes evidence |
-| `dry_run(mode, profile)` | `SessionSummary` | no — produces `plan.json` |
-| `list_sessions` | `SessionSummary[]` | no |
-| `read_session(id)` | `SessionDetail` | no |
-| `open_evidence_dir` | `void` | opens Explorer at evidence root |
-| `get_settings` / `set_settings` | `Settings` | writes settings JSON |
+| `run_doctor` | `DoctorReport` | read-only (the public-IP lookup runs only if the operator opted in) |
+| `run_host_guard_signals` | `HostGuardSignals` | read-only |
+| `run_route_guard_signals` | `RouteGuardSignals` | read-only |
+| `run_evidence_guard_signals` | `EvidenceGuardSignals` | read-only; never creates the evidence directory |
+| `load_profile(path)` | `Profile` | read-only |
+| `validate_profile(profile)` | `ValidationResult` | none |
+| `list_example_profiles` | `ExampleProfileEntry[]` | read-only |
+| `start_observe(profile)` | `SessionSummary` | none — reads, and writes evidence |
+| `dry_run(mode, profile)` | `SessionSummary` | none — produces `plan.json` |
+| `list_sessions` | `SessionSummary[]` | read-only |
+| `read_session(id)` | `SessionDetail` | read-only |
+| `open_evidence_dir(id?)` | `void` | opens Explorer at the evidence root |
+| `export_bofa(id)` / `export_sotyhub(id)` | path | writes an export file inside that session's evidence directory |
+| `save_soty_evidence` / `save_soty_exports` | save result | write the SOTY snapshot / exports under `~/.sotyroute/runs/<timestamp>_soty/` |
+| `get_settings` / `set_settings` | `AppSettings` | writes the settings JSON |
+| `probe_tcp(host, port)` | `TcpProbeResult` | opens and immediately closes one TCP connection to the host and port the operator supplies; not used by the UI yet |
 
-Every command is **read-only** at the system level. Writes happen only inside the evidence directory (`%USERPROFILE%\.sotyroute\`).
+No command changes system network configuration. Writes happen only inside the evidence directory (`%USERPROFILE%\.sotyroute\`).
+
+## SOTY layer
+
+The SOTY track adds a readiness layer on top of the three layers above, without changing their privilege model:
+
+- **Scoring engine** — pure TypeScript in `apps/desktop/src/lib/`: deterministic rules, mappers and builders with no I/O (the SOTY Score, Route Cards, the BOFA gate decision, evidence snapshots).
+- **Guards** — read-only Rust collectors (`host_guard.rs`, `route_guard.rs`, `evidence_guard.rs`) exposed as Tauri commands. Each returns signals; a pure TypeScript mapper turns them into score input, and unknown signals stay `null` rather than being guessed.
+- **Shared state** — a small React context holds the validated active profile, as groundwork for the Scope sub-score.
+
+See [soty-score.md](soty-score.md) for what is real today, and [ai-integration.md](ai-integration.md) for how the engine could be exposed to AI agents.
 
 ## Why this separation
 

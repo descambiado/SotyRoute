@@ -10,6 +10,7 @@ packaged Tauri build. See the honesty note below for exactly what that means.
 | `soty-dashboard.png` | ~186 KB | Top of `/soty` on the **Soty-Ready** preset before running any Guard: SOTY Score hero, sub-score grid, safe-mode notice, preset controls, workflow strip, and the SOTY Workflow CTA row. |
 | `soty-score-real-signals.png` | ~297 KB | Same page after selecting **Lab Route** and running **Host Guard**, **Route Guard** and **Evidence Guard** — score/sub-score area plus all three Guard result panels. |
 | `soty-evidence-exports.png` | ~443 KB | Evidence Snapshot panel (local-only wording, redaction guarantees) and the BOFA Gate + Local Export Preparation panel (local-only, no-launch, no-upload wording), both BOFA and SotyHUB exports prepared. |
+| `soty-hero.png` | ~70 KB | The top 768 px of `soty-dashboard.png`, cropped — not re-rendered or edited — for the README hero. |
 
 ## Honesty note — browser preview, not packaged Tauri
 
